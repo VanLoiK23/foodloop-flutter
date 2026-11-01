@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
-    this.nextRoute = '/virtual-fridge', // Route của màn hình bắt đầu
+    this.nextRoute = '/onboarding1',
     this.waitAfterAnimation = const Duration(seconds: 5),
   });
 

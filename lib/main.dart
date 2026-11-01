@@ -17,6 +17,16 @@ import 'module_3_4/storage_space_selection.dart';
 import 'module_3_4/virtual_refrigerator_overview.dart';
 import 'splash_screen.dart';
 
+import 'module_1_2/onboarding_1.dart';
+import 'module_1_2/mn05_login_1.dart';
+import 'module_1_2/home_dashboard_redesign.dart';
+import 'module_1_2/mn06_dang_ky.dart';
+import 'module_1_2/personal_household_screen.dart';
+import 'module_1_2/profile_setup_screen.dart';
+import 'module_1_2/system_permissions_screen.dart';
+import 'module_1_2/screen15_quick_actions.dart';
+import 'module_1_2/screen17_thong_bao.dart';
+
 // Module 5: Bản đồ quanh bạn & Xin nhận thực phẩm (Đủ 11-12 màn hình theo Figma)
 import 'module_5_map/screen_55_permission_request.dart';
 import 'module_5_map/screen_55_permission_denied.dart';
@@ -98,8 +108,19 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.data,
       initialRoute: '/splash',
       routes: {
+        //module_1_2
         '/splash': (context) => const SplashScreen(), 
+        '/onboarding1': (context) => const MN02Onboarding1(),
+        '/login': (context) => const MN05Login1(),
+        '/home': (context) => const HomeDashboardRedesign(),
+        '/register': (context) => const MN06NgK1(),
+        '/personal_household': (context) => const MN08PersonalHousehold(),
+        '/profile_setup': (context) => const Screen09ProfileSetup(),
+        '/system_permissions': (context) => const Screen102SystemPermissions(),
+        '/quick_action': (context) => const Screen15(),
+        '/notify': (context) => const Screen17ThongBao(),
         // '/': (context) => const HomeDashboard(),
+        //Module_3_4
         '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(), 
         '/family-list': (context) => const FamilyList(),
         '/space-add': (context) => const SpaceAdd(),
