@@ -191,7 +191,7 @@ class FoodLoopBottomNav extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.navBlue.withOpacity(0.4),
+                color: AppColors.navBlue.withValues(alpha: 0.4),
                 blurRadius: 15,
                 spreadRadius: 4,
               ),
