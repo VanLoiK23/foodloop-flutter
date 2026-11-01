@@ -74,13 +74,21 @@ class AppNetworkImage extends StatelessWidget {
 }
 
 class FoodLoopBottomNav extends StatelessWidget {
-  const FoodLoopBottomNav({super.key, required this.currentIndex});
+  const FoodLoopBottomNav({
+    super.key,
+    required this.currentIndex,
+  });
 
   final int currentIndex;
 
   void _go(BuildContext context, String route) {
     if (ModalRoute.of(context)?.settings.name == route) return;
-    Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      route,
+      (route) => false,
+    );
   }
 
   @override
@@ -88,20 +96,61 @@ class FoodLoopBottomNav extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.border,
+          ),
+        ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 8,
+      ),
       child: SafeArea(
         top: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _item(context, 0, Icons.home_outlined, '/'),
-            _item(context, 1, Icons.kitchen_outlined, '/virtual-fridge'), // Icon tủ lạnh
-            _item(context, 2, Icons.map_outlined, '/map'),
-            _item(context, 3, Icons.shopping_bag_outlined, '/shopping'),
-            _item(context, 4, Icons.person_outline, '/settings'),
+            // 1. Trang chủ
+            _item(
+              context,
+              0,
+              Icons.home_outlined,
+              '/home',
+            ),
+
+            // 2. Tủ lạnh
+            _item(
+              context,
+              1,
+              Icons.kitchen_outlined,
+              '/virtual-fridge',
+            ),
+
+            // 3. Bản đồ
+            _item(
+              context,
+              2,
+              Icons.map_outlined,
+              '/map',
+            ),
+
+            // 4. Mua sắm
+            _item(
+              context,
+              3,
+              Icons.shopping_bag_outlined,
+              '/shopping',
+            ),
+
+            // 5. Hồ sơ
+            _item(
+              context,
+              4,
+              Icons.person_outline,
+              '/profile',
+            ),
           ],
         ),
       ),
@@ -111,22 +160,29 @@ class FoodLoopBottomNav extends StatelessWidget {
   Widget _item(
     BuildContext context,
     int index,
-    IconData icon, // Sửa: IconData -> IconData (vì truyền vào là Icons.*)
+    IconData icon,
     String route,
   ) {
-    // Luôn luôn thiết lập trạng thái selected cho index 1 (Tủ lạnh)
-    final selected = index == 1;
+    // Xác định icon đang được chọn
+    final selected = index == currentIndex;
+
     const double circleSize = 52.0;
 
+    // Icon bình thường hoặc icon đang được chọn
     Widget iconWidget = Icon(
       icon,
       size: 24,
-      color: selected ? Colors.white : AppColors.gray,
+      color: selected
+          ? Colors.white
+          : AppColors.gray,
     );
 
+    // Nếu icon đang được chọn
     if (selected) {
       Widget activeItem = GestureDetector(
-        onTap: () => _go(context, route),
+        onTap: () {
+          _go(context, route);
+        },
         child: Container(
           width: circleSize,
           height: circleSize,
@@ -135,13 +191,15 @@ class FoodLoopBottomNav extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.navBlue.withOpacity(0.4),
+                color: AppColors.navBlue.withValues(alpha: 0.4),
                 blurRadius: 15,
                 spreadRadius: 4,
-              )
+              ),
             ],
           ),
-          child: Center(child: iconWidget),
+          child: Center(
+            child: iconWidget,
+          ),
         ),
       );
 
@@ -151,8 +209,11 @@ class FoodLoopBottomNav extends StatelessWidget {
       );
     }
 
+    // Icon chưa được chọn
     return IconButton(
-      onPressed: () => _go(context, route),
+      onPressed: () {
+        _go(context, route);
+      },
       icon: iconWidget,
     );
   }

@@ -39,6 +39,26 @@ import 'module_8_9/report_appeal_screen.dart';
 import 'module_8_9/settings_screen.dart';
 import 'splash_screen.dart';
 
+import 'module_1_2/onboarding_1.dart';
+import 'module_1_2/mn05_login_1.dart';
+import 'module_1_2/home_dashboard_redesign.dart';
+import 'module_1_2/mn06_dang_ky.dart';
+import 'module_1_2/personal_household_screen.dart';
+import 'module_1_2/profile_setup_screen.dart';
+import 'module_1_2/system_permissions_screen.dart';
+import 'module_1_2/screen15_quick_actions.dart';
+import 'module_1_2/screen17_thong_bao.dart';
+
+// Module 5: Bản đồ quanh bạn & Xin nhận thực phẩm (Đủ 11-12 màn hình theo Figma)
+import 'module_5_map/screen_55_permission_request.dart';
+import 'module_5_map/screen_55_permission_denied.dart';
+import 'module_5_map/screen_55_map_radar.dart';
+import 'module_5_map/screen_56_food_list.dart';
+import 'module_5_map/screen_56_empty_state.dart';
+import 'module_5_map/screen_57_food_detail.dart';
+import 'module_5_map/screen_58_request_food.dart';
+import 'module_5_map/screen_58_request_success.dart';
+import 'module_5_map/screen_58_my_request_progress.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -108,9 +128,43 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.data,
       initialRoute: '/splash',
       routes: {
+        // Module 1 & 2
         '/splash': (context) => const SplashScreen(),
-        '/': (context) => const VirtualRefrigeratorOverview(),
-        '/map': (context) => const VirtualRefrigeratorOverview(),
+        '/onboarding1': (context) => const MN02Onboarding1(),
+        '/login': (context) => const MN05Login1(),
+        '/home': (context) => const HomeDashboardRedesign(),
+        '/register': (context) => const MN06NgK1(),
+        '/personal_household': (context) => const MN08PersonalHousehold(),
+        '/profile_setup': (context) => const Screen09ProfileSetup(),
+        '/system_permissions': (context) => const Screen102SystemPermissions(),
+        '/quick_action': (context) => const Screen15(),
+        '/notify': (context) => const Screen17ThongBao(),
+        '/': (context) => const HomeDashboardRedesign(),
+
+        // Module 3 & 4
+        '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(),
+        '/family-list': (context) => const FamilyList(),
+        '/space-add': (context) => const SpaceAdd(),
+        '/space-edit': (context) => const SpaceEdit(),
+        '/add-product': (context) => const AddProductManual(),
+        '/import-product': (context) => const ImportProduct(),
+        '/storage-spaces': (context) => const StorageSpaceSelection(),
+        '/space-selected': (context) => const SpaceSelected(),
+        '/invite-family': (context) => const InviteFamily(),
+        '/realtime-sync': (context) => const RealtimeSync(),
+
+        // Module 5
+        '/permission-request': (context) => const Screen55PermissionRequest(),
+        '/permission-denied': (context) => const Screen55PermissionDenied(),
+        '/map': (context) => const Screen55MapRadar(),
+        '/food-list': (context) => const Screen56FoodList(),
+        '/empty-state': (context) => const Screen56EmptyState(),
+        '/food-detail': (context) => const Screen57FoodDetail(),
+        '/food-request': (context) => const Screen58RequestFood(),
+        '/request-success': (context) => const Screen58RequestSuccess(),
+        '/my-requests': (context) => const Screen58MyRequestProgress(),
+
+        // Module 6 & 7
         '/shopping': (context) => const RescueMarketScreen(),
         '/market': (context) => const RescueMarketScreen(),
         '/rescue-market': (context) => const RescueMarketScreen(),
@@ -127,16 +181,8 @@ class MyApp extends StatelessWidget {
         '/rescue-qr-payment': (context) => const RescueQRPaymentScreen(),
         '/rescue-order-history': (context) => const RescueOrderHistoryScreen(),
         '/order-history': (context) => const RescueOrderHistoryScreen(),
-        '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(),
-        '/family-list': (context) => const FamilyList(),
-        '/space-add': (context) => const SpaceAdd(),
-        '/space-edit': (context) => const SpaceEdit(),
-        '/add-product': (context) => const AddProductManual(),
-        '/import-product': (context) => const ImportProduct(),
-        '/storage-spaces': (context) => const StorageSpaceSelection(),
-        '/space-selected': (context) => const SpaceSelected(),
-        '/invite-family': (context) => const InviteFamily(),
-        '/realtime-sync': (context) => const RealtimeSync(),
+
+        // Module 8 & 9
         '/appeal-and-support': (context) => const AppealAndSupportScreen(),
         '/report-appeal': (context) => const ReportAppealScreen(),
         '/decision-review': (context) => const DecisionReviewScreen(),
