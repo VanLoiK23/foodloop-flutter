@@ -114,8 +114,8 @@ class FoodLoopBottomNav extends StatelessWidget {
     IconData icon, // Sửa: FaIconData -> IconData (vì truyền vào là Icons.*)
     String route,
   ) {
-    // Luôn luôn thiết lập trạng thái selected cho index 1 (Tủ lạnh)
-    final selected = index == 1;
+    // Thiết lập trạng thái selected theo currentIndex truyền vào
+    final selected = index == currentIndex;
     const double circleSize = 52.0;
 
     Widget iconWidget = Icon(
@@ -135,7 +135,7 @@ class FoodLoopBottomNav extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.navBlue.withOpacity(0.4),
+                color: AppColors.navBlue.withValues(alpha: 0.4),
                 blurRadius: 15,
                 spreadRadius: 4,
               )

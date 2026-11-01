@@ -17,6 +17,17 @@ import 'module_3_4/storage_space_selection.dart';
 import 'module_3_4/virtual_refrigerator_overview.dart';
 import 'splash_screen.dart';
 
+// Module 5: Bản đồ quanh bạn & Xin nhận thực phẩm (Đủ 11-12 màn hình theo Figma)
+import 'module_5_map/screen_55_permission_request.dart';
+import 'module_5_map/screen_55_permission_denied.dart';
+import 'module_5_map/screen_55_map_radar.dart';
+import 'module_5_map/screen_56_food_list.dart';
+import 'module_5_map/screen_56_empty_state.dart';
+import 'module_5_map/screen_57_food_detail.dart';
+import 'module_5_map/screen_58_request_food.dart';
+import 'module_5_map/screen_58_request_success.dart';
+import 'module_5_map/screen_58_my_request_progress.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,6 +110,17 @@ class MyApp extends StatelessWidget {
         '/space-selected': (context) => const SpaceSelected(),
         '/invite-family': (context) => const InviteFamily(),
         '/realtime-sync': (context) => const RealtimeSync(),
+
+        // Module 5 Routes (Đủ 11-12 màn hình theo Figma)
+        '/permission-request': (context) => const Screen55PermissionRequest(),
+        '/permission-denied': (context) => const Screen55PermissionDenied(),
+        '/map': (context) => const Screen55MapRadar(),
+        '/food-list': (context) => const Screen56FoodList(),
+        '/empty-state': (context) => const Screen56EmptyState(),
+        '/food-detail': (context) => const Screen57FoodDetail(),
+        '/food-request': (context) => const Screen58RequestFood(),
+        '/request-success': (context) => const Screen58RequestSuccess(),
+        '/my-requests': (context) => const Screen58MyRequestProgress(),
       },
     );
   }
