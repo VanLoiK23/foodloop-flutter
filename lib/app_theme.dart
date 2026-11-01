@@ -98,7 +98,7 @@ class FoodLoopBottomNav extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _item(context, 0, Icons.home_outlined, '/'),
-            _item(context, 1, Icons.kitchen_outlined, '/storage-spaces'), // Icon tủ lạnh
+            _item(context, 1, Icons.kitchen_outlined, '/virtual-fridge'), // Icon tủ lạnh
             _item(context, 2, Icons.map_outlined, '/map'),
             _item(context, 3, Icons.shopping_bag_outlined, '/shopping'),
             _item(context, 4, Icons.person_outline, '/profile'),

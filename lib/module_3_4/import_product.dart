@@ -27,7 +27,7 @@ class ImportProduct extends StatelessWidget {
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
                         } else {
-                          Navigator.pushNamed(context, '/');
+                          Navigator.pushNamed(context, '/virtual-fridge');
                         }
                       },
                       child: Container(

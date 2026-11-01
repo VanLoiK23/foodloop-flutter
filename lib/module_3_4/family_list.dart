@@ -188,7 +188,7 @@ class _FamilyListState extends State<FamilyList> {
                       Container(
                         decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: AppColors.border)),
                         child: IconButton(
-                          onPressed: () => Navigator.pushNamed(context, '/'),
+                          onPressed: () => Navigator.pushNamed(context, '/virtual-fridge'),
                           icon: const Icon(Icons.arrow_back_ios_new, size: 16, color: AppColors.title),
                         ),
                       ),

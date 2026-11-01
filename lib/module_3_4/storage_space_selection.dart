@@ -47,7 +47,7 @@ class StorageSpaceSelection extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.pushNamed(context, '/'),
+                        onPressed: () => Navigator.pushNamed(context, '/virtual-fridge'),
                         icon: const Icon(Icons.arrow_back, color: AppColors.title),
                       ),
                       const Expanded(

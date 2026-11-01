@@ -15,6 +15,8 @@ import 'module_3_4/space_edit.dart';
 import 'module_3_4/space_selected.dart';
 import 'module_3_4/storage_space_selection.dart';
 import 'module_3_4/virtual_refrigerator_overview.dart';
+import 'splash_screen.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,9 +85,11 @@ class MyApp extends StatelessWidget {
       title: 'FoodLoop App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.data,
-      initialRoute: '/',
+      initialRoute: '/splash',
       routes: {
-        '/': (context) => const VirtualRefrigeratorOverview(),
+        '/splash': (context) => const SplashScreen(), 
+        // '/': (context) => const HomeDashboard(),
+        '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(), 
         '/family-list': (context) => const FamilyList(),
         '/space-add': (context) => const SpaceAdd(),
         '/space-edit': (context) => const SpaceEdit(),
