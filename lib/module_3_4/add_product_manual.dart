@@ -498,7 +498,7 @@ class _AddProductManualState extends State<AddProductManual> {
                   decoration: BoxDecoration(color: isSelected ? FigmaColors.brandLight : Colors.white, border: Border.all(color: isSelected ? FigmaColors.brand : FigmaColors.border), borderRadius: BorderRadius.circular(10)),
                   child: Row(
                     children: [
-                      // Sửa: dùng FaIcon cho icon FontAwesome, bỏ ép kiểu `as FaIconData`
+                      // Sửa: dùng FaIcon cho icon FontAwesome, bỏ ép kiểu `as IconData`
                       FaIcon(loc['icon'], size: 18, color: isSelected ? FigmaColors.brand : FigmaColors.textMuted),
                       const SizedBox(width: 8),
                       Expanded(child: Text(loc['name'] as String, style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? FigmaColors.brand : FigmaColors.textMain))),
@@ -577,7 +577,7 @@ class _AddProductManualState extends State<AddProductManual> {
     );
   }
 
-  Widget _buildDatePicker({required String text, required FaIconData icon, required VoidCallback onTap, required bool isHighlight}) {
+  Widget _buildDatePicker({required String text, required IconData icon, required VoidCallback onTap, required bool isHighlight}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),

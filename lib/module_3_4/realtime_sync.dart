@@ -60,7 +60,7 @@ class _RealtimeSyncState extends State<RealtimeSync> {
   }
 
   // Gán Icon dựa trên text hoạt động
-  FaIconData _getIconForActivity(String text) {
+  IconData _getIconForActivity(String text) {
     final lowerText = text.toLowerCase();
     if (lowerText.contains('thêm') || lowerText.contains('tạo')) return FontAwesomeIcons.plus;
     if (lowerText.contains('cập nhật') || lowerText.contains('sửa')) return FontAwesomeIcons.pen;
@@ -219,7 +219,7 @@ class _RealtimeSyncState extends State<RealtimeSync> {
     );
   }
 
-  Widget _row(String text, String time, FaIconData icon, int seed) {
+  Widget _row(String text, String time, IconData icon, int seed) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),

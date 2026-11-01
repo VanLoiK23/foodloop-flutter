@@ -105,7 +105,7 @@ class ImportProduct extends StatelessWidget {
 
   Widget _optionCard(
     BuildContext context,
-    FaIconData icon,
+    IconData icon,
     String title,
     String subtitle,
     String? badgeText,

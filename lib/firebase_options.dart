@@ -36,7 +36,10 @@ class DefaultFirebaseOptions {
   }
 
   static FirebaseOptions get android => FirebaseOptions(
-        apiKey: _env('EXPO_PUBLIC_FIREBASE_API_KEY'),
+        apiKey: _env(
+          'FIREBASE_ANDROID_API_KEY',
+          fallbackKey: 'EXPO_PUBLIC_FIREBASE_API_KEY',
+        ),
         // Ưu tiên App ID của Android, nếu không có thì dùng App ID chung
         appId: _env(
           'FIREBASE_ANDROID_APP_ID',

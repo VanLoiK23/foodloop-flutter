@@ -204,7 +204,7 @@ class _SpaceAddState extends State<SpaceAdd> {
   }
 
   // Cập nhật lại UI thẻ để giống với _templateCard trong SpaceEdit cho đồng bộ
-  Widget _templateCard(String title, String subtitle, FaIconData icon) {
+  Widget _templateCard(String title, String subtitle, IconData icon) {
     final selected = template == title;
     return GestureDetector(
       onTap: () {
@@ -248,7 +248,7 @@ class _SpaceAddState extends State<SpaceAdd> {
     );
   }
 
-  FaIconData _getIconForTemplate(String templateStr) {
+  IconData _getIconForTemplate(String templateStr) {
     switch (templateStr) {
       case 'Ngăn đông':
         return FontAwesomeIcons.snowflake;
