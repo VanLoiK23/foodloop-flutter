@@ -71,7 +71,7 @@ class VirtualRefrigeratorBottomSheet extends StatelessWidget {
 
   Widget _row(
     BuildContext context,
-    FaIconData icon,
+    IconData icon,
     String label,
     VoidCallback onTap,
   ) {

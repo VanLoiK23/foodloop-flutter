@@ -109,7 +109,7 @@ class _SpaceSelectedState extends State<SpaceSelected> {
       );
   }
 
-  // Sửa: FaIconData -> IconData (vì truyền vào là Icons.*)
+  // Sửa: IconData -> IconData (vì truyền vào là Icons.*)
   Widget _bottomSheetAction(IconData icon, Color iconColor, String title, bool isDanger, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: iconColor, size: 24),

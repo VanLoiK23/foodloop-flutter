@@ -16,7 +16,7 @@ class StorageSpaceSelection extends StatelessWidget {
   }
   
   // Hàm chuyển đổi String template thành Icon tương ứng
-  FaIconData _getIconForTemplate(String template) {
+  IconData _getIconForTemplate(String template) {
     switch (template) {
       case 'Ngăn đông':
         return FontAwesomeIcons.snowflake;
@@ -181,7 +181,7 @@ class StorageSpaceSelection extends StatelessWidget {
     String description, // Thêm mô tả nhỏ
     String itemCountText,
     String badge,
-    FaIconData icon,
+    IconData icon,
     bool warning,
   ) {
     return Card(

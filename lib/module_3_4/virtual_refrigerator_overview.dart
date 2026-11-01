@@ -40,7 +40,7 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
   }
 
   // Lấy icon chuẩn cho không gian
-  FaIconData _getIconForTemplate(String template) {
+  IconData _getIconForTemplate(String template) {
     switch (template) {
       case 'Ngăn đông':
         return FontAwesomeIcons.snowflake;
@@ -421,7 +421,7 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
     String name,
     String count,
     String badge,
-    FaIconData icon,
+    IconData icon,
     bool warning,
   ) {
     return GestureDetector(

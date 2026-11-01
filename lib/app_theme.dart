@@ -101,7 +101,7 @@ class FoodLoopBottomNav extends StatelessWidget {
             _item(context, 1, Icons.kitchen_outlined, '/virtual-fridge'), // Icon tủ lạnh
             _item(context, 2, Icons.map_outlined, '/map'),
             _item(context, 3, Icons.shopping_bag_outlined, '/shopping'),
-            _item(context, 4, Icons.person_outline, '/profile'),
+            _item(context, 4, Icons.person_outline, '/settings'),
           ],
         ),
       ),
@@ -111,7 +111,7 @@ class FoodLoopBottomNav extends StatelessWidget {
   Widget _item(
     BuildContext context,
     int index,
-    IconData icon, // Sửa: FaIconData -> IconData (vì truyền vào là Icons.*)
+    IconData icon, // Sửa: IconData -> IconData (vì truyền vào là Icons.*)
     String route,
   ) {
     // Luôn luôn thiết lập trạng thái selected cho index 1 (Tủ lạnh)

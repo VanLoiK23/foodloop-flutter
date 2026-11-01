@@ -240,7 +240,7 @@ class _SpaceEditState extends State<SpaceEdit> {
     super.dispose();
   }
 
-  FaIconData _getIconForTemplate(String templateStr) {
+  IconData _getIconForTemplate(String templateStr) {
     switch (templateStr) {
       case 'Ngăn đông':
         return FontAwesomeIcons.snowflake;
@@ -514,7 +514,7 @@ class _SpaceEditState extends State<SpaceEdit> {
     );
   }
 
-  Widget _templateCard(String title, String subtitle, FaIconData icon) {
+  Widget _templateCard(String title, String subtitle, IconData icon) {
     final selected = template == title;
     return GestureDetector(
       onTap: () {

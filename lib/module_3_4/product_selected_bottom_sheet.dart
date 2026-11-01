@@ -137,7 +137,7 @@ class ProductSelectedBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _action(FaIconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _action(IconData icon, String label, Color color, VoidCallback onTap) {
     return Column(
       children: [
         const Divider(color: AppColors.border, height: 1),

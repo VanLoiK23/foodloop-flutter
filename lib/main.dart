@@ -15,8 +15,29 @@ import 'module_3_4/space_edit.dart';
 import 'module_3_4/space_selected.dart';
 import 'module_3_4/storage_space_selection.dart';
 import 'module_3_4/virtual_refrigerator_overview.dart';
+import 'module_6_7/market_filter_results_screen.dart';
+import 'module_6_7/market_filter_screen.dart';
+import 'module_6_7/rescue_bank_card_screen.dart';
+import 'module_6_7/rescue_booking_screen.dart';
+import 'module_6_7/rescue_detail_screen.dart';
+import 'module_6_7/rescue_market_screen.dart';
+import 'module_6_7/rescue_order_history_screen.dart';
+import 'module_6_7/rescue_payment_screen.dart';
+import 'module_6_7/rescue_pickup_time_screen.dart';
+import 'module_6_7/rescue_qr_payment_screen.dart';
+import 'module_8_9/account_support_screen.dart';
+import 'module_8_9/achievements_screen.dart';
+import 'module_8_9/appeal_and_support_screen.dart';
+import 'module_8_9/community_profile_screen.dart';
+import 'module_8_9/decision_review_screen.dart';
+import 'module_8_9/food_safety_check_screen.dart';
+import 'module_8_9/honor_card_screen.dart';
+import 'module_8_9/impact_trends_screen.dart';
+import 'module_8_9/my_reports_screen.dart';
+import 'module_8_9/received_thanks_screen.dart';
+import 'module_8_9/report_appeal_screen.dart';
+import 'module_8_9/settings_screen.dart';
 import 'splash_screen.dart';
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,9 +108,26 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.data,
       initialRoute: '/splash',
       routes: {
-        '/splash': (context) => const SplashScreen(), 
-        // '/': (context) => const HomeDashboard(),
-        '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(), 
+        '/splash': (context) => const SplashScreen(),
+        '/': (context) => const VirtualRefrigeratorOverview(),
+        '/map': (context) => const VirtualRefrigeratorOverview(),
+        '/shopping': (context) => const RescueMarketScreen(),
+        '/market': (context) => const RescueMarketScreen(),
+        '/rescue-market': (context) => const RescueMarketScreen(),
+        '/market-filter': (context) => const MarketFilterScreen(),
+        '/rescue-filter': (context) => const MarketFilterScreen(),
+        '/market-filter-results': (context) => const MarketFilterResultsScreen(),
+        '/rescue-detail': (context) => const RescueDetailScreen(),
+        '/product-detail': (context) => const RescueDetailScreen(),
+        '/rescue-booking': (context) => const RescueBookingScreen(),
+        '/rescue-pickup-time': (context) => const RescuePickupTimeScreen(),
+        '/rescue-payment': (context) => const RescuePaymentScreen(),
+        '/payment': (context) => const RescuePaymentScreen(),
+        '/rescue-bank-card': (context) => const RescueBankCardScreen(),
+        '/rescue-qr-payment': (context) => const RescueQRPaymentScreen(),
+        '/rescue-order-history': (context) => const RescueOrderHistoryScreen(),
+        '/order-history': (context) => const RescueOrderHistoryScreen(),
+        '/virtual-fridge': (context) => const VirtualRefrigeratorOverview(),
         '/family-list': (context) => const FamilyList(),
         '/space-add': (context) => const SpaceAdd(),
         '/space-edit': (context) => const SpaceEdit(),
@@ -99,6 +137,19 @@ class MyApp extends StatelessWidget {
         '/space-selected': (context) => const SpaceSelected(),
         '/invite-family': (context) => const InviteFamily(),
         '/realtime-sync': (context) => const RealtimeSync(),
+        '/appeal-and-support': (context) => const AppealAndSupportScreen(),
+        '/report-appeal': (context) => const ReportAppealScreen(),
+        '/decision-review': (context) => const DecisionReviewScreen(),
+        '/account-support': (context) => const AccountSupportScreen(),
+        '/my-reports': (context) => const MyReportsScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/profile': (context) => const SettingsScreen(),
+        '/community-profile': (context) => const CommunityProfileScreen(),
+        '/food-safety-check': (context) => const FoodSafetyCheckScreen(),
+        '/achievements': (context) => const AchievementsScreen(),
+        '/impact-trends': (context) => const ImpactTrendsScreen(),
+        '/received-thanks': (context) => const ReceivedThanksScreen(),
+        '/honor-card': (context) => const HonorCardScreen(),
       },
     );
   }

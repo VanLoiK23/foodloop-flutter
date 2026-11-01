@@ -15,7 +15,7 @@ class ImportSuccessScreen extends StatelessWidget {
     return exp.difference(today).inDays;
   }
 
-  FaIconData _getLocationIcon(String location) {
+  IconData _getLocationIcon(String location) {
     if (location.toLowerCase().contains('đông') || location.toLowerCase().contains('mát')) {
       return FontAwesomeIcons.snowflake; 
     } else if (location.toLowerCase().contains('bếp')) {
@@ -184,7 +184,7 @@ class ImportSuccessScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIconBadge(FaIconData icon) {
+  Widget _buildIconBadge(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(

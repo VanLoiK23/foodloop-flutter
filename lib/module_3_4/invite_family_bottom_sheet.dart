@@ -42,9 +42,9 @@ class _InviteFamilyBottomSheetState extends State<InviteFamilyBottomSheet> {
     }
   }
 
-  // Sửa: nhận Object, tự chọn FaIcon (FaIconData) hoặc Icon (IconData)
+  // Sửa: nhận Object, tự chọn FaIcon (IconData) hoặc Icon (IconData)
   Widget _buildShareAppIcon(Object icon, String label, Color bgColor, Color iconColor) {
-      final Widget iconWidget = icon is FaIconData
+      final Widget iconWidget = icon is IconData
           ? FaIcon(icon, color: iconColor, size: 24)
           : Icon(icon as IconData, color: iconColor, size: 24);
 
