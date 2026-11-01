@@ -371,7 +371,7 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
         onPressed: () => showAppSheet(context, const VirtualRefrigeratorBottomSheet()),
         child: const FaIcon(FontAwesomeIcons.plus, color: Colors.white),
       ),
-      bottomNavigationBar: const FoodLoopBottomNav(currentIndex: 0),
+      bottomNavigationBar: const FoodLoopBottomNav(currentIndex: 1),
     );
   }
 
