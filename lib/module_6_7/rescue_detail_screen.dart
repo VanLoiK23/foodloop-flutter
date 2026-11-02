@@ -63,6 +63,24 @@ class _RescueDetailScreenState extends State<RescueDetailScreen> {
     return '${buffer.toString().split('').reversed.join()}đ';
   }
 
+  Widget _buildPlaceholderBanner() {
+    return Container(
+      width: double.infinity,
+      height: 160,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.shopping_basket_rounded,
+          size: 54,
+          color: AppTokens.brand,
+        ),
+      ),
+    );
+  }
+
   void _handleOrder() {
     Navigator.pushNamed(
       context,
@@ -90,6 +108,7 @@ class _RescueDetailScreenState extends State<RescueDetailScreen> {
     final int discountedPrice = product['discountedPrice'] as int? ?? 45000;
     final int originalPrice = product['originalPrice'] as int? ?? 80000;
     final String expiryHint = product['expiryHint'] ?? 'Dùng trong 2 ngày';
+    final String imageUrl = product['imageUrl'] as String? ?? '';
     final String description = product['description'] ??
         'Giỏ rau củ cuối ngày từ Rau Sạch Xanh với giá ưu đãi. Ưu tiên dùng sớm để tránh lãng phí.';
 
@@ -137,20 +156,18 @@ class _RescueDetailScreenState extends State<RescueDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Khối hình ảnh / icon đồ họa scanner nổi bật
-                          Container(
-                            width: double.infinity,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.crop_free_rounded,
-                                size: 54,
-                                color: AppTokens.brand,
-                              ),
-                            ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: imageUrl.isNotEmpty
+                                ? Image.network(
+                                    imageUrl,
+                                    width: double.infinity,
+                                    height: 160,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        _buildPlaceholderBanner(),
+                                  )
+                                : _buildPlaceholderBanner(),
                           ),
 
                           const SizedBox(height: AppTokens.space16),

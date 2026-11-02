@@ -2,12 +2,16 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Cho phép người dùng đã xác thực (bao gồm cả tài khoản ẩn danh Anonymous Auth)
     function isAuthenticated() {
       return request.auth != null;
     }
 
     match /users/{userId} {
       allow read, write: if isAuthenticated();
+      match /{allChildren=**} {
+        allow read, write: if isAuthenticated();
+      }
     }
 
     match /settings/{settingId} {
@@ -42,8 +46,28 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    match /rescue_orders/{orderId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /rescue_baskets/{basketId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /fridge_items/{itemId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /food_posts/{postId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /food_requests/{requestId} {
+      allow read, write: if isAuthenticated();
+    }
+
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isAuthenticated();
     }
   }
 }

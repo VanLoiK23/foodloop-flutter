@@ -6,6 +6,7 @@ import '../components/bottom_nav.dart';
 import '../components/primary_button.dart';
 import '../components/screen_header.dart';
 import '../services/foodloop_firestore_service.dart';
+import '../services/foodloop_seeder_service.dart';
 import '../theme/app_tokens.dart';
 
 /// Màn hình 100: "Cài đặt"
@@ -196,6 +197,67 @@ class SettingsScreen extends StatelessWidget {
 
                         const SizedBox(height: AppTokens.space20),
 
+                        // Khối tiện ích Nạp dữ liệu mẫu
+                        _buildSectionTitle('Dữ liệu & Khởi tạo mẫu'),
+                        const SizedBox(height: AppTokens.space8),
+                        Container(
+                          padding: const EdgeInsets.all(AppTokens.space16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: AppTokens.radiusLg,
+                            border: Border.all(
+                              color: AppTokens.border.withValues(alpha: 0.8),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Nạp dữ liệu mẫu lên Firebase',
+                                style: TextStyle(
+                                  fontSize: 15.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTokens.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Tự động tạo đầy đủ dữ liệu cho tất cả các màn hình: Chợ giải cứu, Tủ lạnh, Bản đồ radar, Thông báo, Thành tựu & Báo cáo.',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: AppTokens.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTokens.brand,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 20),
+                                  label: const Text(
+                                    'Nạp dữ liệu mẫu ngay (Seed Firebase)',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  onPressed: () => _handleSeedData(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: AppTokens.space20),
+
                         // Nút Đăng xuất
                         PrimaryButton(
                           text: 'Đăng xuất',
@@ -232,6 +294,69 @@ class SettingsScreen extends StatelessWidget {
         fontSize: 16.0,
       ),
     );
+  }
+
+  Future<void> _handleSeedData(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppTokens.brand),
+                SizedBox(height: 16),
+                Text('Đang nạp toàn bộ dữ liệu mẫu lên Firestore...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final result = await FoodLoopSeederService.seedAll();
+    if (context.mounted) {
+      Navigator.pop(context); // Đóng dialog loading
+      if (result['success'] == true) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTokens.surface,
+            shape: RoundedRectangleBorder(borderRadius: AppTokens.radiusLg),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: AppTokens.brand),
+                SizedBox(width: 8),
+                Text('Nạp dữ liệu thành công!'),
+              ],
+            ),
+            content: Text(
+              'Đã tạo thành công ${result['totalDocs']} documents trên Firestore cho tất cả 14 collections của hệ thống FoodLoop.',
+            ),
+            actions: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTokens.brand,
+                  shape: RoundedRectangleBorder(borderRadius: AppTokens.radiusMd),
+                ),
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Xong', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi nạp dữ liệu: ${result['error']}'),
+            backgroundColor: AppTokens.danger,
+          ),
+        );
+      }
+    }
   }
 
   void _showNotice(BuildContext context, String message) {

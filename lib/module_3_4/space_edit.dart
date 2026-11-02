@@ -314,7 +314,7 @@ class _SpaceEditState extends State<SpaceEdit> {
                             crossAxisCount: 2,
                             mainAxisSpacing: 8,
                             crossAxisSpacing: 8,
-                            childAspectRatio: 2.2,
+                            childAspectRatio: 1.8,
                             children: [
                               _templateCard('Ngăn mát', 'Rau, sữa, thịt cá tươi', FontAwesomeIcons.temperatureLow),
                               _templateCard('Ngăn đông', 'Đồ đông lạnh', FontAwesomeIcons.snowflake),
@@ -528,14 +528,14 @@ class _SpaceEditState extends State<SpaceEdit> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? Colors.white : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: selected ? AppColors.brand : AppColors.border, width: selected ? 1.5 : 1),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             FaIcon(icon, size: 16, color: selected ? AppColors.brand : AppColors.title),
             const SizedBox(width: 8),
@@ -543,10 +543,21 @@ class _SpaceEditState extends State<SpaceEdit> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.title, fontSize: 13)),
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.title, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(fontSize: 10, color: AppColors.gray)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 10, color: AppColors.gray),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),

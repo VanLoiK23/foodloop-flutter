@@ -133,7 +133,7 @@ class Screen15 extends StatelessWidget {
                         description: 'Thêm thực phẩm nhanh',
                         buttonText: 'Quét ngay',
                         onPressed: () {
-                          // TODO: Chuyển sang màn hình quét
+                          Navigator.pushNamed(context, '/import-product');
                         },
                       ),
 
@@ -149,7 +149,7 @@ class Screen15 extends StatelessWidget {
                         description: 'Nhập thông tin món đồ',
                         buttonText: 'Thêm ngay',
                         onPressed: () {
-                          // TODO: Chuyển sang màn hình thêm thực phẩm
+                          Navigator.pushNamed(context, '/add-product');
                         },
                       ),
 
@@ -165,7 +165,7 @@ class Screen15 extends StatelessWidget {
                         description: 'Nấu từ thực phẩm có sẵn',
                         buttonText: 'Vào ngay',
                         onPressed: () {
-                          // TODO: Chuyển sang màn hình công thức
+                          Navigator.pushNamed(context, '/virtual-fridge');
                         },
                       ),
 
@@ -181,7 +181,7 @@ class Screen15 extends StatelessWidget {
                         description: 'Cho đi món sắp hết hạn',
                         buttonText: 'Chia sẻ ngay',
                         onPressed: () {
-                          // TODO: Chuyển sang màn hình chia sẻ
+                          Navigator.pushNamed(context, '/rescue-market');
                         },
                       ),
 
@@ -216,7 +216,7 @@ class Screen15 extends StatelessWidget {
         ),
         child: IconButton(
           onPressed: () {
-            // TODO: Xử lý nút thêm
+            Navigator.pushNamed(context, '/add-product');
           },
           icon: const Icon(
             Icons.add,

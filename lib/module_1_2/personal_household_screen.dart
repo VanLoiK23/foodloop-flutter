@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../services/user_session.dart';
 
@@ -37,36 +38,39 @@ class _MN08PersonalHouseholdState
 
   Future<void> _loadSession() async {
     try {
-      final userId = await UserSession.getUserId();
+      final sessionUserId = await UserSession.getUserId();
+      final authUid = FirebaseAuth.instance.currentUser?.uid;
+      final userId = (sessionUserId != null && sessionUserId.trim().isNotEmpty)
+          ? sessionUserId
+          : authUid;
 
-      if (!mounted) return;
+      if (userId != null && userId.trim().isNotEmpty) {
+        userDocumentId = userId;
+        try {
+          final doc = await _firestore.collection('users').doc(userId).get();
+          if (doc.exists && doc.data() != null) {
+            final role = doc.data()!['role']?.toString();
+            if (role != null && role.isNotEmpty) {
+              selectedRole = role;
+            }
+          }
+        } catch (_) {}
+      }
 
-      if (userId == null || userId.trim().isEmpty) {
+      // Mặc định chọn Cá nhân theo Figma nếu chưa có dữ liệu
+      selectedRole ??= 'Cá nhân';
+
+      if (mounted) {
         setState(() {
           isLoading = false;
         });
-
-        _showMessage(
-          'Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.',
-        );
-
-        return;
       }
-
-      setState(() {
-        userDocumentId = userId;
-        isLoading = false;
-      });
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
+        selectedRole ??= 'Cá nhân';
         isLoading = false;
       });
-
-      _showMessage(
-        'Không thể kiểm tra phiên đăng nhập: $e',
-      );
     }
   }
 

@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../app_theme.dart';
-import 'product_selected_bottom_sheet.dart';
+// import 'product_selected_bottom_sheet.dart';
 import 'space_selected_action_bottom_sheet.dart';
-import 'virtual_refrigerator_bottom_sheet.dart';
+// import 'virtual_refrigerator_bottom_sheet.dart';
 
 class SpaceSelected extends StatefulWidget {
   const SpaceSelected({super.key});
@@ -20,6 +20,7 @@ class _SpaceSelectedState extends State<SpaceSelected> {
   TextEditingController searchController = TextEditingController();
 
   // Helper method to format time if needed, though not strictly required here based on design
+  // ignore: unused_element
   String _formatTime(Timestamp? timestamp) {
       if (timestamp == null) return 'Vừa xong';
       return '...'; // Placeholder if needed later

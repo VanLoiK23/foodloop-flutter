@@ -31,7 +31,7 @@ class MN02Onboarding2 extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
-                      // TODO: Xử lý nút Bỏ qua
+                      Navigator.pushReplacementNamed(context, '/login');
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

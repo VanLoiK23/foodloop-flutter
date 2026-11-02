@@ -1,6 +1,7 @@
  
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../app_theme.dart';
 import '../services/user_session.dart';
@@ -33,6 +34,41 @@ class _Screen17ThongBaoState extends State<Screen17ThongBao> {
   static const Color yellowColor = Color(0xFFF4B942);
   static const Color redColor = Color(0xFFD64545);
 
+  static const List<Map<String, dynamic>> _defaultMockNotifications = [
+    {
+      'section': 'Hôm nay',
+      'title': 'Sữa tươi TH True Milk',
+      'status': 'Đã hết hạn',
+      'time': '10 phút trước',
+      'type': 'expired',
+      'order': 1,
+    },
+    {
+      'section': 'Tuần này',
+      'title': 'Rau muống',
+      'status': 'Còn 2 ngày',
+      'time': '1 giờ trước',
+      'type': 'warning',
+      'order': 2,
+    },
+    {
+      'section': 'Tuần này',
+      'title': 'Phan Hà',
+      'status': 'Vừa thêm 3 thực phẩm',
+      'time': '2 giờ trước',
+      'type': 'activity',
+      'order': 3,
+    },
+    {
+      'section': 'Tuần này',
+      'title': 'Báo cáo tiêu thụ tuần',
+      'status': 'Đã sẵn sàng',
+      'time': '5 ngày trước',
+      'type': 'report',
+      'order': 4,
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -47,36 +83,27 @@ class _Screen17ThongBaoState extends State<Screen17ThongBao> {
 
   Future<void> _loadUserAndNotifications() async {
     try {
-      // Lấy UID của người dùng đang đăng nhập
-      final String? id = await UserSession.getUserId();
+      final String? sessionUid = await UserSession.getUserId();
+      final String? authUid = FirebaseAuth.instance.currentUser?.uid;
+      final String? id = (sessionUid != null && sessionUid.isNotEmpty)
+          ? sessionUid
+          : authUid;
 
-      if (id == null || id.isEmpty) {
-        debugPrint('Không tìm thấy userID trong session');
-        return;
+      if (id != null && id.isNotEmpty) {
+        userId = id;
+        notifyCollection = FirebaseFirestore.instance
+            .collection('users')
+            .doc(id)
+            .collection('notify');
+
+        await _checkAndCreateNotifications();
       }
 
-      // Lưu userID
-      userId = id;
-
-      // =========================
-      // Firestore:
-      // users/{userID}/notify
-      // =========================
-
-      notifyCollection = FirebaseFirestore.instance
-          .collection('users')
-          .doc(id)
-          .collection('notify');
-
-      // Kiểm tra và tạo thông báo mặc định
-      await _checkAndCreateNotifications();
-
-      // Cập nhật giao diện
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      debugPrint('Lỗi lấy userID: $e');
+      debugPrint('Lỗi lấy userID: ');
     }
   }
 
@@ -329,29 +356,112 @@ class _Screen17ThongBaoState extends State<Screen17ThongBao> {
   // 9. HIỂN THỊ DANH SÁCH
   // =========================
 
-  Widget _buildNotificationList() {
-    // Chưa lấy được userID
-    if (userId == null || notifyCollection == null) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: primaryColor,
-        ),
+  Widget _buildNotificationItem({
+    required String title,
+    required String status,
+    required String time,
+    required String type,
+    String imageUrl = '',
+  }) {
+    if (type == 'expired') {
+      return _buildExpiredNotification(
+        title: title,
+        status: status,
+        time: time,
+        imageUrl: imageUrl,
       );
+    }
+    return _buildFoodNotification(
+      imageUrl: imageUrl,
+      title: title,
+      status: status,
+      time: time,
+      type: type,
+    );
+  }
+
+  Widget _buildDefaultNotificationList() {
+    final todayList = _defaultMockNotifications
+        .where((n) => n['section'] == 'Hôm nay')
+        .toList();
+    final weekList = _defaultMockNotifications
+        .where((n) => n['section'] == 'Tuần này')
+        .toList();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (todayList.isNotEmpty) ...[
+                  const Text(
+                    'Hôm nay',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  ...todayList.map((n) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildNotificationItem(
+                          title: n['title']!,
+                          status: n['status']!,
+                          time: n['time']!,
+                          type: n['type']!,
+                        ),
+                      )),
+                ],
+                if (weekList.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Tuần này',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...weekList.map((n) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildNotificationItem(
+                          title: n['title']!,
+                          status: n['status']!,
+                          time: n['time']!,
+                          type: n['type']!,
+                        ),
+                      )),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationList() {
+    if (userId == null || notifyCollection == null) {
+      return _buildDefaultNotificationList();
     }
 
     return StreamBuilder<
         QuerySnapshot<Map<String, dynamic>>>(
-      // Đọc realtime notify của user hiện tại
       stream: notifyCollection!.snapshots(),
-
       builder: (
         context,
         snapshot,
       ) {
-        // =========================
-        // ĐANG TẢI
-        // =========================
-
         if (snapshot.connectionState ==
             ConnectionState.waiting) {
           return const Center(
@@ -361,48 +471,11 @@ class _Screen17ThongBaoState extends State<Screen17ThongBao> {
           );
         }
 
-        // =========================
-        // CÓ LỖI
-        // =========================
-
-        if (snapshot.hasError) {
-          debugPrint(
-            'Lỗi đọc notify: ${snapshot.error}',
-          );
-
-          return const Center(
-            child: Text(
-              'Không thể tải thông báo',
-              style: TextStyle(
-                color: hintColor,
-                fontSize: 14,
-                fontFamily: 'Inter',
-              ),
-            ),
-          );
-        }
-
-        // =========================
-        // KHÔNG CÓ DỮ LIỆU
-        // =========================
-
-        if (!snapshot.hasData ||
+        if (snapshot.hasError ||
+            !snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text(
-              'Chưa có thông báo',
-              style: TextStyle(
-                color: hintColor,
-                fontSize: 14,
-                fontFamily: 'Inter',
-              ),
-            ),
-          );
+          return _buildDefaultNotificationList();
         }
-
-        // =========================
-        // LẤY DANH SÁCH
-        // =========================
 
         final List<
             QueryDocumentSnapshot<

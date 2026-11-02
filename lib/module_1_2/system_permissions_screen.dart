@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
  
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -74,18 +75,14 @@ class _Screen102SystemPermissionsState
     });
 
     try {
-      // 1. Kiểm tra Session
-      final userId = await UserSession.getUserId();
+      // 1. Kiểm tra Session hoặc Auth hiện tại
+      final sessionUserId = await UserSession.getUserId();
+      final authUid = FirebaseAuth.instance.currentUser?.uid;
+      final _ = (sessionUserId != null && sessionUserId.trim().isNotEmpty)
+          ? sessionUserId
+          : authUid;
 
       if (!mounted) return;
-
-      if (userId == null || userId.trim().isEmpty) {
-        _showMessage(
-          'Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.',
-          isError: true,
-        );
-        return;
-      }
 
       // 2. Chỉ xin quyền Thông báo nếu đã chọn
       if (_notificationSelected) {
@@ -133,17 +130,7 @@ class _Screen102SystemPermissionsState
   Future<void> _skipPermissions() async {
     if (_isLoading) return;
 
-    final userId = await UserSession.getUserId();
-
     if (!mounted) return;
-
-    if (userId == null || userId.trim().isEmpty) {
-      _showMessage(
-        'Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.',
-        isError: true,
-      );
-      return;
-    }
 
     Navigator.pushNamedAndRemoveUntil(
       context,

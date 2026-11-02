@@ -37,6 +37,7 @@ import 'module_8_9/my_reports_screen.dart';
 import 'module_8_9/received_thanks_screen.dart';
 import 'module_8_9/report_appeal_screen.dart';
 import 'module_8_9/settings_screen.dart';
+import 'services/foodloop_seeder_service.dart';
 import 'splash_screen.dart';
 
 import 'module_1_2/onboarding_1.dart';
@@ -87,6 +88,7 @@ Future<void> _signInAnonymously() async {
       await FirebaseAuth.instance.signInAnonymously();
     }
     debugPrint('AUTH OK: ${FirebaseAuth.instance.currentUser?.uid}');
+    FoodLoopSeederService.seedIfEmpty();
   } catch (error) {
     debugPrint('FirebaseAuth Error: $error');
   }

@@ -251,4 +251,33 @@ class FoodLoopFirestoreService {
         .orderBy('createdAt', descending: true)
         .snapshots();
   }
+
+  // =================================================================
+  // --- 13. DASHBOARD & HOME (TRANG CHỦ - MODULE 1_2) ---
+  // =================================================================
+
+  /// Lắng nghe thông tin tài khoản người dùng từ collection 'users'
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> streamUserProfile([String? userId]) {
+    final uid = userId ?? currentUserId ?? 'default_user';
+    return _firestore.collection('users').doc(uid).snapshots();
+  }
+
+  /// Lắng nghe danh sách thực phẩm trong tủ lạnh của người dùng
+  static Stream<QuerySnapshot<Map<String, dynamic>>> streamFridgeItems([String? userId]) {
+    return _firestore.collection('fridge_items').snapshots();
+  }
+
+  /// Lắng nghe danh sách thông báo của người dùng
+  static Stream<QuerySnapshot<Map<String, dynamic>>> streamUserNotifications([String? userId]) {
+    final uid = userId ?? currentUserId;
+    if (uid != null && uid.isNotEmpty) {
+      return _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('notify')
+          .orderBy('createdAt', descending: true)
+          .snapshots();
+    }
+    return _firestore.collection('notifications').snapshots();
+  }
 }
