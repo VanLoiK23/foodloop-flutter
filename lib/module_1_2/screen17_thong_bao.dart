@@ -450,24 +450,23 @@ class _Screen17ThongBaoState extends State<Screen17ThongBao> {
     );
   }
 
-  Widget _buildNotificationList() {
-    if (userId == null || notifyCollection == null) {
-      return _buildDefaultNotificationList();
+  Stream<QuerySnapshot<Map<String, dynamic>>> _getNotificationsStream() {
+    if (notifyCollection != null) {
+      return notifyCollection!.snapshots();
     }
+    return FirebaseFirestore.instance.collection('notifications').snapshots();
+  }
 
-    return StreamBuilder<
-        QuerySnapshot<Map<String, dynamic>>>(
-      stream: notifyCollection!.snapshots(),
+  Widget _buildNotificationList() {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _getNotificationsStream(),
       builder: (
         context,
         snapshot,
       ) {
-        if (snapshot.connectionState ==
-            ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
+            child: CircularProgressIndicator(color: primaryColor),
           );
         }
 

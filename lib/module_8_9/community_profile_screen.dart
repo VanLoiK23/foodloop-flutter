@@ -14,6 +14,39 @@ import '../theme/app_tokens.dart';
 class CommunityProfileScreen extends StatelessWidget {
   final String? userId;
 
+  static const Map<String, dynamic> _defaultUserProfile = {
+    'name': 'Minh Anh',
+    'fullName': 'Nguyễn Minh Anh',
+    'displayName': 'Minh Anh',
+    'memberSince': 'Thành viên từ tháng 10/2026',
+    'trustScore': 86,
+    'trustScoreMax': 100,
+    'avatarUrl': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    'trustInfoTitle': 'Điểm tin cậy được tính thế nào?',
+    'trustInfoDescription': 'Dựa trên tỷ lệ bàn giao thành công, đánh giá từ hàng xóm và số báo cáo vi phạm.',
+  };
+
+  static const List<Map<String, dynamic>> _defaultSharedHistory = [
+    {
+      'name': 'Sữa tươi TH True Milk 1L',
+      'subtitle': '2 hộp · Ngăn mát · HSD: 04/11/2026',
+      'imageUrl': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80',
+      'status': 'Đã chia sẻ',
+    },
+    {
+      'name': 'Rau muống xanh',
+      'subtitle': '1 bó · Ngăn mát · HSD: 03/11/2026',
+      'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80',
+      'status': 'Đã chia sẻ',
+    },
+    {
+      'name': 'Cà chua bi Đà Lạt',
+      'subtitle': '500 g · Kệ bếp · HSD: 05/11/2026',
+      'imageUrl': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=400&q=80',
+      'status': 'Đã chia sẻ',
+    },
+  ];
+
   const CommunityProfileScreen({
     super.key,
     this.userId,
@@ -46,13 +79,22 @@ class CommunityProfileScreen extends StatelessWidget {
                     );
                   }
 
-                  final userData = profileSnapshot.data?.data() ?? {};
+                  final rawData = profileSnapshot.data?.data();
+                  final userData = (rawData != null && rawData.isNotEmpty)
+                      ? rawData
+                      : _defaultUserProfile;
 
-                  // Trích xuất dữ liệu người dùng từ Firestore
-                  final String name = userData['name'] ?? '';
-                  final String memberSince = userData['memberSince'] ?? '';
-                  final int trustScore = (userData['trustScore'] as num?)?.toInt() ?? 0;
-                  final int trustScoreMax = (userData['trustScoreMax'] as num?)?.toInt() ?? 100;
+                  // Trích xuất dữ liệu người dùng từ Firestore (ưu tiên Firebase, fallback mẫu chuẩn)
+                  final String name = userData['name'] ??
+                      userData['fullName'] ??
+                      userData['displayName'] ??
+                      'Minh Anh';
+                  final String memberSince = userData['memberSince'] ??
+                      'Thành viên từ tháng 10/2026';
+                  final int trustScore =
+                      (userData['trustScore'] as num?)?.toInt() ?? 86;
+                  final int trustScoreMax =
+                      (userData['trustScoreMax'] as num?)?.toInt() ?? 100;
                   final String avatarUrl = userData['avatarUrl'] ?? '';
 
                   final String trustInfoTitle = userData['trustInfoTitle'] ??
@@ -70,18 +112,26 @@ class CommunityProfileScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ProfileHeaderCard(
-                          name: name.isNotEmpty ? name : 'Thành viên FoodLoop',
-                          caption: memberSince.isNotEmpty ? memberSince : 'Thành viên cộng đồng',
+                          name: name,
+                          caption: memberSince.startsWith('Thành viên')
+                              ? memberSince
+                              : 'Thành viên từ $memberSince',
                           avatar: avatarUrl.isNotEmpty
-                              ? Image.network(
-                                  avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Center(
-                                    child: Icon(
-                                      Icons.eco_rounded,
-                                      color: Colors.white,
-                                      size: 38,
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  child: Image.network(
+                                    avatarUrl,
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Center(
+                                      child: Icon(
+                                        Icons.eco_rounded,
+                                        color: Colors.white,
+                                        size: 38,
+                                      ),
                                     ),
                                   ),
                                 )
@@ -144,8 +194,13 @@ class CommunityProfileScreen extends StatelessWidget {
                               );
                             }
 
-                            final docs = historySnapshot.data?.docs ?? [];
-                            if (docs.isEmpty) {
+                            final rawDocs = historySnapshot.data?.docs ?? [];
+                            final List<Map<String, dynamic>> items =
+                                rawDocs.isNotEmpty
+                                    ? rawDocs.map((d) => d.data()).toList()
+                                    : _defaultSharedHistory;
+
+                            if (items.isEmpty) {
                               return Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(AppTokens.space24),
@@ -167,15 +222,52 @@ class CommunityProfileScreen extends StatelessWidget {
                             }
 
                             return Column(
-                              children: docs.map((doc) {
-                                final item = doc.data();
-                                final String title = item['productName'] ?? item['title'] ?? '';
-                                final String subtitle = item['productSubtitle'] ?? item['subtitle'] ?? '';
-                                final String imageUrl = item['productImage'] ?? item['imageUrl'] ?? '';
-                                final String status = item['status'] ?? 'Đã chia sẻ';
+                              children: items.map((item) {
+                                // 1. Trích xuất tên món ăn (hỗ trợ cả 'name', 'productName', 'title')
+                                final String title = item['name'] ??
+                                    item['productName'] ??
+                                    item['title'] ??
+                                    'Món quà chia sẻ';
+
+                                // 2. Trích xuất mô tả chi tiết / phụ đề
+                                String subtitle = item['productSubtitle'] ??
+                                    item['subtitle'] ??
+                                    '';
+                                if (subtitle.isEmpty) {
+                                  final parts = <String>[];
+                                  if (item['quantity'] != null) {
+                                    final unit = item['unit'] ?? '';
+                                    parts.add('${item['quantity']} $unit'.trim());
+                                  }
+                                  if (item['space'] != null &&
+                                      item['space'].toString().isNotEmpty) {
+                                    parts.add(item['space'].toString());
+                                  } else if (item['category'] != null &&
+                                      item['category'].toString().isNotEmpty) {
+                                    parts.add(item['category'].toString());
+                                  }
+                                  if (item['expiry'] != null &&
+                                      item['expiry'].toString().isNotEmpty) {
+                                    parts.add('HSD: ${item['expiry']}');
+                                  } else if (item['badge'] != null &&
+                                      item['badge'].toString().isNotEmpty) {
+                                    parts.add(item['badge'].toString());
+                                  }
+                                  subtitle = parts.isNotEmpty
+                                      ? parts.join(' · ')
+                                      : 'Đã chia sẻ thành công';
+                                }
+
+                                final String imageUrl = item['imageUrl'] ??
+                                    item['productImage'] ??
+                                    '';
+                                final String status =
+                                    item['status'] ?? 'Đã chia sẻ';
 
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: AppTokens.space12),
+                                  padding: const EdgeInsets.only(
+                                    bottom: AppTokens.space12,
+                                  ),
                                   child: PostCard(
                                     title: title,
                                     subtitle: subtitle,
@@ -183,7 +275,8 @@ class CommunityProfileScreen extends StatelessWidget {
                                         ? Image.network(
                                             imageUrl,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
                                                 Container(
                                               color: AppTokens.brandLight,
                                               child: const Icon(

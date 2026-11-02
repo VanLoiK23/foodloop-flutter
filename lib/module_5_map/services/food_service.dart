@@ -156,9 +156,25 @@ class FoodService {
         ),
       ];
 
+  static List<FoodRequest> get defaultRequests => [
+        FoodRequest(
+          id: 'req_sample_01',
+          postId: 'post_banhmi_01',
+          foodTitle: 'Bánh mì ngọt',
+          giverName: 'Lan Anh',
+          requestedQuantity: 2,
+          unit: 'cái',
+          timeSlot: '17:30 - 18:00',
+          message: 'Em là sinh viên ở gần, em xin 2 cái cho bữa tối nhé ạ. Em cảm ơn!',
+          status: 'pending',
+          pickupAddress: 'Địa chỉ cụ thể sẽ mở khi Lan Anh đồng ý',
+          createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
+        ),
+      ];
+
   // In-memory fallback
   final List<FoodPost> _localPosts = List.from(defaultPosts);
-  final List<FoodRequest> _localRequests = [];
+  final List<FoodRequest> _localRequests = List.from(defaultRequests);
   final StreamController<List<FoodRequest>> _localRequestsController =
       StreamController<List<FoodRequest>>.broadcast();
 
@@ -206,7 +222,7 @@ class FoodService {
 
       return query.snapshots().map((snap) {
         if (snap.docs.isEmpty) {
-          return <FoodPost>[];
+          return _filterLocal(typeFilter, categoryFilter, maxDistanceMeters);
         }
         var list = snap.docs.map((doc) => FoodPost.fromFirestore(doc)).toList();
         if (maxDistanceMeters != null) {
@@ -357,7 +373,12 @@ class FoodService {
           .collection('food_requests')
           .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((snap) => snap.docs.map((d) => FoodRequest.fromFirestore(d)).toList())
+          .map((snap) {
+            if (snap.docs.isEmpty) {
+              return _localRequests;
+            }
+            return snap.docs.map((d) => FoodRequest.fromFirestore(d)).toList();
+          })
           .handleError((e) {
             debugPrint('Lỗi getMyRequestsStream: $e');
             return _localRequests;

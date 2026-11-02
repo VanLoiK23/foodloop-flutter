@@ -193,9 +193,9 @@ class _HomeDashboardRedesignState extends State<HomeDashboardRedesign> {
                     final int expiringCount = hasData
                         ? docs.where((d) {
                             final m = d.data();
+                            final days = m['daysLeft'] ?? m['remainingDays'];
                             return m['isExpiring'] == true ||
-                                (m['remainingDays'] != null &&
-                                    m['remainingDays'] <= 2);
+                                (days != null && days <= 3);
                           }).length
                         : 5;
 
@@ -275,9 +275,9 @@ class _HomeDashboardRedesignState extends State<HomeDashboardRedesign> {
                     final docs = snapshot.data?.docs ?? [];
                     final expiringDocs = docs.where((d) {
                       final m = d.data();
+                      final days = m['daysLeft'] ?? m['remainingDays'];
                       return m['isExpiring'] == true ||
-                          (m['remainingDays'] != null &&
-                              m['remainingDays'] <= 3);
+                          (days != null && days <= 3);
                     }).toList();
 
                     if (expiringDocs.isNotEmpty) {
@@ -287,10 +287,11 @@ class _HomeDashboardRedesignState extends State<HomeDashboardRedesign> {
                           final name = data['name']?.toString() ??
                               data['title']?.toString() ??
                               'Thực phẩm';
-                          final desc = data['location']?.toString() ??
+                          final desc = data['space']?.toString() ??
+                              data['location']?.toString() ??
                               data['category']?.toString() ??
                               'Ngăn mát';
-                          final days = data['remainingDays'] ?? 1;
+                          final days = data['daysLeft'] ?? data['remainingDays'] ?? 1;
                           final img = data['imageUrl']?.toString() ??
                               'https://placehold.co/56x56';
 

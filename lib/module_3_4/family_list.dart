@@ -12,6 +12,20 @@ class FamilyList extends StatefulWidget {
 }
 
 class _FamilyListState extends State<FamilyList> {
+  static const List<Map<String, dynamic>> _defaultMembers = [
+    {
+      'id': 'mem_1',
+      'name': 'Phan Hà',
+      'email': 'phanha@gmail.com',
+      'role': 'Thành viên',
+    },
+    {
+      'id': 'mem_2',
+      'name': 'Bé An',
+      'email': 'bean@gmail.com',
+      'role': 'Thành viên',
+    },
+  ];
   
   // Sửa: thêm generic đầy đủ để doc.data() là Map<String, dynamic>
   Stream<QuerySnapshot<Map<String, dynamic>>> _members() {
@@ -176,8 +190,11 @@ class _FamilyListState extends State<FamilyList> {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: _members(),
             builder: (context, snapshot) {
-              final members = snapshot.data?.docs ?? [];
-              final totalMembers = members.length + 1; // +1 tính luôn chủ sở hữu cứng
+              final memberDocs = snapshot.data?.docs ?? [];
+              final List<Map<String, dynamic>> memberList = memberDocs.isNotEmpty
+                  ? memberDocs.map((doc) => {'id': doc.id, ...doc.data()}).toList()
+                  : _defaultMembers;
+              final totalMembers = memberList.length + 1; // +1 tính luôn chủ sở hữu cứng
 
               return ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -304,16 +321,16 @@ class _FamilyListState extends State<FamilyList> {
                     seed: 11,
                   ),
                   
-                  // RENDER THÀNH VIÊN TỪ FIREBASE
-                  ...members.map((doc) {
-                    final data = doc.data();
+                  // RENDER THÀNH VIÊN (ƯU TIÊN FIREBASE, FALLBACK MẪU)
+                  ...memberList.map((data) {
+                    final id = data['id']?.toString();
                     return _memberCard(
-                      id: doc.id,
+                      id: id,
                       name: data['name']?.toString() ?? 'Thành viên',
                       email: data['email']?.toString() ?? '',
                       role: data['role']?.toString() ?? 'Thành viên',
                       isOwner: false,
-                      seed: doc.id.hashCode.abs() % 40 + 1,
+                      seed: (id?.hashCode ?? data['name'].hashCode).abs() % 40 + 1,
                     );
                   }),
                 ],

@@ -774,7 +774,7 @@ class _RescueBookingScreenState extends State<RescueBookingScreen> {
                     },
                     borderRadius: BorderRadius.circular(6),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
@@ -784,12 +784,17 @@ class _RescueBookingScreenState extends State<RescueBookingScreen> {
                             color: AppTokens.brand,
                           ),
                           SizedBox(width: 6),
-                          Text(
-                            'Giữ chỗ – trả tại cửa hàng  (Hoặc thanh toán online >)',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppTokens.brand,
+                          Flexible(
+                            child: Text(
+                              'Giữ chỗ – trả tại cửa hàng (Hoặc thanh toán online >)',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w600,
+                                color: AppTokens.brand,
+                              ),
                             ),
                           ),
                         ],

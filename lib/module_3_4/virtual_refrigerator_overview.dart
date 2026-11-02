@@ -9,6 +9,82 @@ import 'virtual_refrigerator_bottom_sheet.dart';
 class VirtualRefrigeratorOverview extends StatelessWidget {
   const VirtualRefrigeratorOverview({super.key});
 
+  static const List<Map<String, dynamic>> _defaultSpaces = [
+    {
+      'id': 'space_fridge',
+      'name': 'Ngăn mát',
+      'itemCount': 12,
+      'status': 'Có món sắp hết hạn',
+      'template': 'Ngăn mát',
+    },
+    {
+      'id': 'space_freezer',
+      'name': 'Ngăn đông',
+      'itemCount': 3,
+      'status': 'Bảo quản tốt (-18°C)',
+      'template': 'Ngăn đông',
+    },
+    {
+      'id': 'space_dry',
+      'name': 'Tủ bếp',
+      'itemCount': 5,
+      'status': 'Khô ráo',
+      'template': 'Tủ bếp',
+    },
+    {
+      'id': 'space_spices',
+      'name': 'Gia vị',
+      'itemCount': 4,
+      'status': 'Đầy đủ',
+      'template': 'Vị trí khác',
+    },
+  ];
+
+  static const List<Map<String, dynamic>> _defaultProducts = [
+    {
+      'id': 'prod_1',
+      'name': 'Sữa tươi TH True Milk 1L',
+      'space': 'Ngăn mát',
+      'badge': 'Còn 2 ngày',
+      'expiry': '29/10/2026',
+      'daysLeft': 2,
+      'imageUrl': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_2',
+      'name': 'Rau muống',
+      'space': 'Ngăn mát',
+      'badge': 'Còn 1 ngày',
+      'expiry': '28/10/2026',
+      'daysLeft': 1,
+      'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_4',
+      'name': 'Ức gà tươi CP',
+      'space': 'Ngăn đông',
+      'badge': 'Còn 3 ngày',
+      'expiry': '30/10/2026',
+      'daysLeft': 3,
+      'imageUrl': 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=400&q=80',
+    },
+  ];
+
+  static const List<Map<String, dynamic>> _defaultActivities = [
+    {
+      'text': 'Phan Hà đã thêm 3 thực phẩm vào Ngăn mát',
+      'timeAgo': '10 phút trước',
+    },
+    {
+      'text': 'Huỳnh Văn Lợi đã dùng hết Sữa chua Vinamilk',
+      'timeAgo': '2 giờ trước',
+    },
+    {
+      'text': 'Đã đồng bộ kho gia đình thành công',
+      'timeAgo': 'Hôm qua',
+    },
+  ];
+
   // Sửa: 3 hàm Stream dùng generic đầy đủ
   Stream<QuerySnapshot<Map<String, dynamic>>> _spaces() {
     if (!firebaseReady) return const Stream.empty();
@@ -176,9 +252,13 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: _products(),
             builder: (context, productSnap) {
-              final products = productSnap.data?.docs ?? [];
-              final expiring = products.where((doc) {
-                final days = doc.data()['daysLeft'];
+              final productDocs = productSnap.data?.docs ?? [];
+              final List<Map<String, dynamic>> productItems = productDocs.isNotEmpty
+                  ? productDocs.map((doc) => {'id': doc.id, ...doc.data()}).toList()
+                  : _defaultProducts;
+
+              final expiring = productItems.where((item) {
+                final days = item['daysLeft'];
                 return days is num && days <= 3;
               }).length;
 
@@ -186,7 +266,10 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
               return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: _spaces(),
                 builder: (context, spaceSnap) {
-                  final spaces = spaceSnap.data?.docs ?? [];
+                  final spaceDocs = spaceSnap.data?.docs ?? [];
+                  final List<Map<String, dynamic>> spaceItems = spaceDocs.isNotEmpty
+                      ? spaceDocs.map((doc) => {'id': doc.id, ...doc.data()}).toList()
+                      : _defaultSpaces;
 
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
@@ -264,95 +347,92 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          _statCard('${products.length}', 'Món đang lưu trữ', Colors.white, AppColors.title),
+                          _statCard('${productItems.length}', 'Món đang lưu trữ', Colors.white, AppColors.title),
                           const SizedBox(width: 8),
                           _statCard('$expiring', 'Món sắp hết hạn', AppColors.dangerBg, AppColors.dangerStrong),
                           const SizedBox(width: 8),
-                          _statCard('${spaces.length}', 'Khu vực lưu trữ', Colors.white, AppColors.brand),
+                          _statCard('${spaceItems.length}', 'Khu vực lưu trữ', Colors.white, AppColors.brand),
                         ],
                       ),
                       const SizedBox(height: 20),
                       _sectionTitle('Không gian lưu trữ', 'Xem tất cả', () => Navigator.pushNamed(context, '/storage-spaces')),
                       const SizedBox(height: 12),
                       
-                      // RENDER SPACES TỪ FIREBASE
+                      // RENDER SPACES TỪ FIREBASE (ƯU TIÊN FIREBASE, FALLBACK MẪU)
                       SizedBox(
                         height: 150,
-                        child: spaces.isEmpty
-                            ? const Center(child: Text('Chưa có không gian nào', style: TextStyle(color: AppColors.gray)))
-                            : ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: spaces.length,
-                                itemBuilder: (context, index) {
-                                  final doc = spaces[index];
-                                  final data = doc.data();
-                                  final iconTemplate = _getIconForTemplate(data['template']?.toString() ?? '');
-                                  final status = data['status']?.toString() ?? '';
-                                  final isWarning = status.toLowerCase().contains('hết hạn');
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: spaceItems.length,
+                          itemBuilder: (context, index) {
+                            final data = spaceItems[index];
+                            final id = data['id']?.toString() ?? 'space_$index';
+                            final iconTemplate = _getIconForTemplate(data['template']?.toString() ?? '');
+                            final status = data['status']?.toString() ?? '';
+                            final isWarning = status.toLowerCase().contains('hết hạn');
 
-                                  return _spaceCard(
-                                    context,
-                                    doc.id,
-                                    data['name']?.toString() ?? 'Không gian',
-                                    '${data['itemCount'] ?? 0} món',
-                                    status,
-                                    iconTemplate,
-                                    isWarning,
-                                  );
-                                },
-                              ),
+                            return _spaceCard(
+                              context,
+                              id,
+                              data['name']?.toString() ?? 'Không gian',
+                              '${data['itemCount'] ?? 0} món',
+                              status,
+                              iconTemplate,
+                              isWarning,
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(height: 20),
                       _sectionTitle('Sắp hết hạn', 'Xem tất cả', () => Navigator.pushNamed(context, '/space-selected')),
                       const Text('Cần xử lý trong 3 ngày tới', style: TextStyle(color: AppColors.gray, fontSize: 13)),
                       const SizedBox(height: 12),
 
-                      // RENDER PRODUCTS TỪ FIREBASE (Chỉ lấy món sắp hết hạn)
-                      if (products.isEmpty)
+                      // RENDER PRODUCTS TỪ FIREBASE (Chỉ lấy món sắp hết hạn, ƯU TIÊN FIREBASE, FALLBACK MẪU)
+                      if (productItems.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Center(child: Text('Không có món nào sắp hết hạn', style: TextStyle(color: AppColors.gray))),
                         )
                       else
-                        ...products.where((doc) {
-                          final days = doc.data()['daysLeft'];
+                        ...productItems.where((item) {
+                          final days = item['daysLeft'];
                           return days is num && days <= 3;
-                        }).take(5).map((doc) {
-                          final data = doc.data();
+                        }).take(5).map((item) {
                           return _productRow(
                             context,
-                            doc.id,
-                            data['name']?.toString() ?? 'Sản phẩm',
-                            data['space']?.toString() ?? 'Không gian',
-                            data['badge']?.toString() ?? '',
-                            data['expiry']?.toString() ?? '',
-                            (data['daysLeft'] is num) && (data['daysLeft'] as num) < 0,
-                            data['imageUrl']?.toString(), // Truyền URL ảnh từ Firebase
+                            item['id']?.toString() ?? 'prod_item',
+                            item['name']?.toString() ?? 'Sản phẩm',
+                            item['space']?.toString() ?? 'Không gian',
+                            item['badge']?.toString() ?? '',
+                            item['expiry']?.toString() ?? '',
+                            (item['daysLeft'] is num) && (item['daysLeft'] as num) < 0,
+                            item['imageUrl']?.toString(),
                           );
                         }),
                       
                       const SizedBox(height: 12),
                       _sectionTitle('Hoạt động gần đây', 'Xem lịch sử', () => Navigator.pushNamed(context, '/realtime-sync')),
 
-                      // RENDER ACTIVITIES TỪ FIREBASE
-                      // Sửa: StreamBuilder có generic đầy đủ
+                      // RENDER ACTIVITIES TỪ FIREBASE (ƯU TIÊN FIREBASE, FALLBACK MẪU)
                       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                         stream: _activities(),
                         builder: (context, snap) {
-                          final docs = snap.data?.docs ?? [];
-                          if (docs.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Text('Chưa có hoạt động nào.', style: TextStyle(color: AppColors.gray)),
-                            );
-                          }
+                          final actDocs = snap.data?.docs ?? [];
+                          final List<Map<String, dynamic>> actItems = actDocs.isNotEmpty
+                              ? actDocs.map((d) => d.data()).toList()
+                              : _defaultActivities;
+
                           return Column(
-                            children: docs.map((doc) {
-                              final data = doc.data();
+                            children: actItems.map((data) {
+                              final text = data['text']?.toString() ?? 'Hoạt động mới';
+                              final time = data['createdAt'] is Timestamp
+                                  ? _getTimeAgo(data['createdAt'] as Timestamp)
+                                  : (data['timeAgo']?.toString() ?? 'Vừa xong');
                               return _activity(
-                                data['text']?.toString() ?? 'Hoạt động mới',
-                                _getTimeAgo(data['createdAt'] as Timestamp?), // Tính thời gian tự động
-                                30 + doc.id.hashCode.abs() % 20,
+                                text,
+                                time,
+                                30 + text.hashCode.abs() % 20,
                               );
                             }).toList(),
                           );

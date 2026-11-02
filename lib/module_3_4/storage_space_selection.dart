@@ -8,6 +8,41 @@ import 'space_selected_action_bottom_sheet.dart';
 class StorageSpaceSelection extends StatelessWidget {
   const StorageSpaceSelection({super.key});
 
+  static const List<Map<String, dynamic>> _defaultSpaces = [
+    {
+      'id': 'space_fridge',
+      'name': 'Ngăn mát',
+      'template': 'Ngăn mát',
+      'note': 'Nhiệt độ 4°C, bảo quản rau củ và sữa',
+      'itemCount': 12,
+      'status': 'Có món sắp hết hạn',
+    },
+    {
+      'id': 'space_freezer',
+      'name': 'Ngăn đông',
+      'template': 'Ngăn đông',
+      'note': 'Nhiệt độ -18°C, bảo quản thịt cá',
+      'itemCount': 3,
+      'status': 'Bảo quản tốt',
+    },
+    {
+      'id': 'space_dry',
+      'name': 'Tủ bếp',
+      'template': 'Tủ bếp',
+      'note': 'Nhiệt độ phòng, bảo quản đồ khô',
+      'itemCount': 5,
+      'status': 'Khô ráo',
+    },
+    {
+      'id': 'space_spices',
+      'name': 'Gia vị',
+      'template': 'Vị trí khác',
+      'note': 'Kệ gia vị góc bếp',
+      'itemCount': 4,
+      'status': 'Đầy đủ',
+    },
+  ];
+
   // Sửa: thêm generic đầy đủ để doc.data() là Map<String, dynamic> (không còn Object?)
   Stream<QuerySnapshot<Map<String, dynamic>>> _spaces() {
     if (!firebaseReady) return const Stream.empty();
@@ -107,7 +142,7 @@ class StorageSpaceSelection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Chỉ hiển thị dữ liệu thực tế từ Firebase
+                  // Ưu tiên dữ liệu từ Firebase, fallback về danh sách mẫu chuẩn
                   if (snapshot.connectionState == ConnectionState.waiting)
                     const Center(
                       child: Padding(
@@ -115,18 +150,13 @@ class StorageSpaceSelection extends StatelessWidget {
                         child: CircularProgressIndicator(color: AppColors.brand),
                       ),
                     )
-                  else if (spaces.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Text(
-                        'Chưa có không gian nào. Hãy tạo mới!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.gray),
-                      ),
-                    )
-                  else
-                    ...spaces.map((doc) {
-                      final data = doc.data();
+                  else ...() {
+                    final List<Map<String, dynamic>> spacesList = spaces.isNotEmpty
+                        ? spaces.map((doc) => {'id': doc.id, ...doc.data()}).toList()
+                        : _defaultSpaces;
+
+                    return spacesList.map((data) {
+                      final id = data['id']?.toString() ?? 'space_item';
                       final spaceName = data['name']?.toString() ?? 'Không gian';
                       // Lấy icon tương ứng dựa trên template
                       final iconTemplate = _getIconForTemplate(data['template']?.toString() ?? '');
@@ -138,7 +168,7 @@ class StorageSpaceSelection extends StatelessWidget {
 
                       return _space(
                         context,
-                        doc.id,
+                        id,
                         spaceName,
                         note, // Truyền Note vào làm description
                         '${data['itemCount'] ?? 0} món đang lưu trữ',
@@ -146,7 +176,8 @@ class StorageSpaceSelection extends StatelessWidget {
                         iconTemplate,
                         isWarning,
                       );
-                    }),
+                    });
+                  }(),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: () => Navigator.pushNamed(context, '/space-add'),

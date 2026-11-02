@@ -122,7 +122,9 @@ class FoodLoopFirestoreService {
 
   /// Lắng nghe dữ liệu hồ sơ cộng đồng và điểm tin cậy từ collection 'users'
   static Stream<DocumentSnapshot<Map<String, dynamic>>> streamCommunityProfile([String? userId]) {
-    final uid = userId ?? currentUserId ?? 'default_user';
+    final uid = (userId != null && userId.isNotEmpty)
+        ? userId
+        : 'default_user';
     return _firestore.collection('users').doc(uid).snapshots();
   }
 
@@ -262,9 +264,9 @@ class FoodLoopFirestoreService {
     return _firestore.collection('users').doc(uid).snapshots();
   }
 
-  /// Lắng nghe danh sách thực phẩm trong tủ lạnh của người dùng
+  /// Lắng nghe danh sách thực phẩm trong kho của người dùng (ưu tiên collection 'products')
   static Stream<QuerySnapshot<Map<String, dynamic>>> streamFridgeItems([String? userId]) {
-    return _firestore.collection('fridge_items').snapshots();
+    return _firestore.collection('products').snapshots();
   }
 
   /// Lắng nghe danh sách thông báo của người dùng

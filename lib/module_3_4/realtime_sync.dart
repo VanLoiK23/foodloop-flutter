@@ -15,14 +15,36 @@ class RealtimeSync extends StatefulWidget {
 class _RealtimeSyncState extends State<RealtimeSync> {
   String filter = 'Tất cả';
 
-  // Lọc hoạt động dựa trên từ khóa trong Firebase
-  // Sửa: thêm generic <Map<String, dynamic>> cho QueryDocumentSnapshot
-  List<QueryDocumentSnapshot<Map<String, dynamic>>> _filterActivities(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> activities) {
+  static const List<Map<String, dynamic>> _defaultActivities = [
+    {
+      'id': 'act_sample_1',
+      'text': 'Phan Hà đã thêm 3 thực phẩm vào Ngăn mát',
+      'timeText': '10 phút trước',
+    },
+    {
+      'id': 'act_sample_2',
+      'text': 'Huỳnh Văn Lợi đã đánh dấu dùng hết Sữa chua',
+      'timeText': '2 giờ trước',
+    },
+    {
+      'id': 'act_sample_3',
+      'text': 'Phan Hà đã chỉnh sửa thời hạn Rau muống',
+      'timeText': '5 giờ trước',
+    },
+    {
+      'id': 'act_sample_4',
+      'text': 'Đã đồng bộ dữ liệu kho gia đình',
+      'timeText': 'Hôm qua lúc 18:30',
+    },
+  ];
+
+  // Lọc hoạt động dựa trên từ khóa
+  List<Map<String, dynamic>> _filterActivities(
+      List<Map<String, dynamic>> activities) {
     if (filter == 'Tất cả') return activities;
     
-    return activities.where((doc) {
-      final text = (doc.data()['text']?.toString() ?? '').toLowerCase();
+    return activities.where((data) {
+      final text = (data['text']?.toString() ?? '').toLowerCase();
       if (filter == 'Thêm') {
         return text.contains('thêm') || text.contains('tạo');
       }
@@ -85,13 +107,16 @@ class _RealtimeSyncState extends State<RealtimeSync> {
                     .snapshots()
                 : const Stream.empty(),
             builder: (context, snapshot) {
-              final rawActivities = snapshot.data?.docs ?? [];
-              final filteredActivities = _filterActivities(rawActivities);
+              final rawDocs = snapshot.data?.docs ?? [];
+              final List<Map<String, dynamic>> allActivities = rawDocs.isNotEmpty
+                  ? rawDocs.map((d) => {'id': d.id, ...d.data()}).toList()
+                  : _defaultActivities;
+              final filteredActivities = _filterActivities(allActivities);
               
               // Tính thời gian đồng bộ cuối cùng
-              final lastSync = rawActivities.isNotEmpty 
-                  ? _formatTime(rawActivities.first.data()['createdAt'] as Timestamp?)
-                  : 'Chưa đồng bộ';
+              final lastSync = rawDocs.isNotEmpty 
+                  ? _formatTime(rawDocs.first.data()['createdAt'] as Timestamp?)
+                  : 'Hôm nay lúc 18:30';
 
               return ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -197,16 +222,18 @@ class _RealtimeSyncState extends State<RealtimeSync> {
                       ),
                     )
                   else
-                    ...filteredActivities.map((doc) {
-                      final data = doc.data();
+                    ...filteredActivities.map((data) {
                       final text = data['text']?.toString() ?? 'Hoạt động';
-                      final timestamp = data['createdAt'] as Timestamp?;
+                      final timeStr = data['createdAt'] is Timestamp
+                          ? _formatTime(data['createdAt'] as Timestamp)
+                          : (data['timeText']?.toString() ?? 'Vừa xong');
+                      final seed = (data['id']?.hashCode ?? text.hashCode).abs() % 50 + 1;
                       
                       return _row(
                         text,
-                        _formatTime(timestamp),
+                        timeStr,
                         _getIconForActivity(text),
-                        doc.id.hashCode.abs() % 50 + 1, // Tạo avatar ngẫu nhiên dựa trên ID
+                        seed,
                       );
                     }),
                 ],
