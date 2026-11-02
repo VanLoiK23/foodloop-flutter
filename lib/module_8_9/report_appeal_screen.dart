@@ -131,9 +131,10 @@ class _ReportAppealScreenState extends State<ReportAppealScreen> {
                     ],
                   };
 
-                  final String productName = data['productName'] ?? '';
-                  final String productSubtitle = data['productSubtitle'] ?? '';
-                  final String productImage = data['productImage'] ?? '';
+                  final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                  final String productName = args?['name'] ?? args?['title'] ?? data['productName'] ?? '';
+                  final String productSubtitle = args?['subtitle'] ?? args?['space'] ?? data['productSubtitle'] ?? '';
+                  final String productImage = args?['image'] ?? args?['imageUrl'] ?? data['productImage'] ?? '';
 
                   final List<dynamic>? dynamicReasons =
                       data['reasons'] as List<dynamic>?;

@@ -19,6 +19,7 @@ class FoodPost {
   final double giverRating;
   final int giverShares;
   final String addressHint;
+  final String pickupAddress;
   final double xPercent; // Vị trí trên bản đồ radar (0.0 -> 1.0)
   final double yPercent; // Vị trí trên bản đồ radar (0.0 -> 1.0)
   final String iconType; // 'bread', 'milk', 'egg', 'vegetable', 'meat', 'other'
@@ -43,7 +44,8 @@ class FoodPost {
     required this.giverAvatar,
     required this.giverRating,
     required this.giverShares,
-    required this.addressHint,
+    this.addressHint = '470 Trần Đại Nghĩa',
+    this.pickupAddress = '470 Trần Đại Nghĩa',
     required this.xPercent,
     required this.yPercent,
     required this.iconType,
@@ -70,6 +72,7 @@ class FoodPost {
       'giverRating': giverRating,
       'giverShares': giverShares,
       'addressHint': addressHint,
+      'pickupAddress': pickupAddress,
       'xPercent': xPercent,
       'yPercent': yPercent,
       'iconType': iconType,
@@ -117,7 +120,8 @@ class FoodPost {
       giverAvatar: data['giverAvatar'] ?? 'FL',
       giverRating: (data['giverRating'] is num) ? (data['giverRating'] as num).toDouble() : 4.8,
       giverShares: (data['giverShares'] ?? 10) as int,
-      addressHint: data['addressHint'] ?? 'Địa chỉ chính xác hiện sau khi được duyệt',
+      addressHint: data['addressHint'] ?? data['pickupAddress'] ?? '470 Trần Đại Nghĩa',
+      pickupAddress: data['pickupAddress'] ?? data['addressHint'] ?? '470 Trần Đại Nghĩa',
       xPercent: (data['xPercent'] is num) ? (data['xPercent'] as num).toDouble() : 0.5,
       yPercent: (data['yPercent'] is num) ? (data['yPercent'] as num).toDouble() : 0.5,
       iconType: data['iconType'] ?? 'other',

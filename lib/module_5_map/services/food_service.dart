@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../app_theme.dart';
@@ -174,6 +175,8 @@ class FoodService {
 
   // In-memory fallback
   final List<FoodPost> _localPosts = List.from(defaultPosts);
+  final StreamController<List<FoodPost>> _localPostsController =
+      StreamController<List<FoodPost>>.broadcast();
   final List<FoodRequest> _localRequests = List.from(defaultRequests);
   final StreamController<List<FoodRequest>> _localRequestsController =
       StreamController<List<FoodRequest>>.broadcast();
@@ -235,8 +238,14 @@ class FoodService {
       });
     }
 
-    // Fallback in-memory
-    return Stream.value(_filterLocal(typeFilter, categoryFilter, maxDistanceMeters));
+    // Fallback in-memory stream lắng nghe cập nhật thời gian thực
+    return Stream<List<FoodPost>>.multi((controller) {
+      controller.add(_filterLocal(typeFilter, categoryFilter, maxDistanceMeters));
+      final sub = _localPostsController.stream.listen((_) {
+        controller.add(_filterLocal(typeFilter, categoryFilter, maxDistanceMeters));
+      });
+      controller.onCancel = () => sub.cancel();
+    });
   }
 
   List<FoodPost> _filterLocal(String type, String? category, int? maxDistance) {
@@ -445,5 +454,113 @@ class FoodService {
         debugPrint('Lỗi Firestore cancelRequest (đã cập nhật local): $e');
       }
     }
+  }
+
+  /// Tạo bài đăng chia sẻ thực phẩm 1 chạm (từ Màn 81: Kiểm tra an toàn thực phẩm)
+  /// - Vị trí của sản phẩm chia sẻ 1 chạm sẽ cách bạn ngẫu nhiên dưới
+  /// - pickupAddress mặc định là '470 Trần Đại Nghĩa'
+  Future<FoodPost> createSharedFoodPost({
+    required String title,
+    String? category,
+    String? unit,
+    int? quantity,
+    String? badge,
+    int? daysLeft,
+    String? condition,
+    String? giverName,
+    String? pickupAddress,
+  }) async {
+    final now = DateTime.now();
+    final random = math.Random();
+    final postId = 'post_share_${now.millisecondsSinceEpoch}';
+
+    // 1. Phân loại và icon tương ứng theo tên thực phẩm
+    final lowerTitle = title.toLowerCase();
+    String detectedCategory = category ?? 'Khác';
+    String iconType = 'other';
+
+    if (lowerTitle.contains('sữa') || lowerTitle.contains('milk') || lowerTitle.contains('thtt')) {
+      detectedCategory = 'Sữa';
+      iconType = 'milk';
+    } else if (lowerTitle.contains('bánh') || lowerTitle.contains('mì') || lowerTitle.contains('bread')) {
+      detectedCategory = 'Bánh mì';
+      iconType = 'bread';
+    } else if (lowerTitle.contains('rau') || lowerTitle.contains('củ') || lowerTitle.contains('cải') || lowerTitle.contains('salad')) {
+      detectedCategory = 'Rau củ';
+      iconType = 'vegetable';
+    } else if (lowerTitle.contains('trứng') || lowerTitle.contains('egg')) {
+      detectedCategory = 'Trứng';
+      iconType = 'egg';
+    } else if (lowerTitle.contains('thịt') || lowerTitle.contains('gà') || lowerTitle.contains('bò') || lowerTitle.contains('heo') || lowerTitle.contains('cá')) {
+      detectedCategory = 'Thịt cá';
+      iconType = 'meat';
+    }
+
+    // 2. Vị trí cách bạn ngẫu nhiên dưới:
+    // - Khoảng cách ngẫu nhiên dưới 500m (từ 120m đến 420m)
+    final int distanceMeters = 120 + random.nextInt(300);
+    // - Vị trí radar ở nửa dưới của tâm bạn (tâm là x:0.5, y:0.5 -> yPercent: 0.58 đến 0.74, xPercent: 0.38 đến 0.62)
+    final double xPercent = 0.38 + random.nextDouble() * 0.24;
+    final double yPercent = 0.58 + random.nextDouble() * 0.16;
+
+    final effectiveAddress = pickupAddress ?? '470 Trần Đại Nghĩa';
+
+    final newPost = FoodPost(
+      id: postId,
+      title: title,
+      category: detectedCategory,
+      type: 'Cho',
+      totalQuantity: quantity ?? 1,
+      remainingQuantity: quantity ?? 1,
+      unit: unit ?? 'phần',
+      daysLeft: daysLeft ?? 1,
+      badge: badge ?? 'Còn 1 ngày',
+      distanceMeters: distanceMeters,
+      pickupTime: '17:00 - 20:00',
+      timeSlots: [
+        '17:00 - 18:00',
+        '18:00 - 19:00',
+        '19:00 - 20:00',
+      ],
+      condition: condition ?? 'Đã qua kiểm tra an toàn thực phẩm',
+      giverName: giverName ?? 'Minh Anh (Bạn)',
+      giverAvatar: 'MA',
+      giverRating: 5.0,
+      giverShares: 13,
+      addressHint: effectiveAddress,
+      pickupAddress: effectiveAddress,
+      xPercent: xPercent,
+      yPercent: yPercent,
+      iconType: iconType,
+      status: 'available',
+      createdAt: now,
+    );
+
+    // Cập nhật bộ nhớ local ngay lập tức
+    _localPosts.insert(0, newPost);
+    _localPostsController.add(List.from(_localPosts));
+
+    // Đồng bộ lên Firestore nếu khả dụng
+    if (firebaseReady) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('food_posts')
+            .doc(postId)
+            .set(newPost.toMap())
+            .timeout(const Duration(milliseconds: 2500));
+
+        await FirebaseFirestore.instance
+            .collection('activities')
+            .add({
+              'text': 'Đã chia sẻ 1 chạm $title lên bản đồ quanh bạn',
+              'createdAt': FieldValue.serverTimestamp(),
+            })
+            .timeout(const Duration(milliseconds: 1500));
+      } catch (e) {
+        debugPrint('Lỗi Firestore createSharedFoodPost (đã lưu local): $e');
+      }
+    }
+
+    return newPost;
   }
 }

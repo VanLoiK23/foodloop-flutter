@@ -63,11 +63,15 @@ class _Screen56FoodListState extends State<Screen56FoodList> {
                 trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.gray),
                 onTap: () {
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã gửi báo cáo bài đăng tới ban quản trị'),
-                      backgroundColor: AppColors.brand,
-                    ),
+                  Navigator.pushNamed(
+                    context,
+                    '/report-appeal',
+                    arguments: {
+                      'id': post.id,
+                      'name': post.title,
+                      'subtitle': '${post.remainingQuantity} ${post.unit} · ${post.distanceMeters}m · ${post.giverName}',
+                      'image': '',
+                    },
                   );
                 },
               ),

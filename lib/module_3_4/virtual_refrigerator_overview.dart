@@ -605,16 +605,25 @@ class VirtualRefrigeratorOverview extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: overdue ? AppColors.dangerBg : AppColors.accent.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12),
+color: overdue ? AppColors.dangerStrong : const Color(0xFFF4B942),       
+         borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
-                badge,
-                style: TextStyle(
-                  color: overdue ? AppColors.dangerStrong : AppColors.title,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!overdue) ...[
+                    const Icon(Icons.schedule, size: 10, color: AppColors.title),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    badge,
+                    style: TextStyle(
+                      color: overdue ? Colors.white : AppColors.title,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

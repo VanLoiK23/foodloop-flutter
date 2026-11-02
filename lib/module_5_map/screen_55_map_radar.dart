@@ -16,12 +16,32 @@ class Screen55MapRadar extends StatefulWidget {
 class _Screen55MapRadarState extends State<Screen55MapRadar> {
   String _typeFilter = 'Tất cả'; // 'Tất cả', 'Cho', 'Xin'
   FoodPost? _selectedPost;
+  bool _hasCheckedHighlight = false;
 
   @override
   void initState() {
     super.initState();
     // Tự động seed dữ liệu mẫu lên Firestore nếu đang trống
     FoodService.instance.seedInitialDataIfEmpty();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasCheckedHighlight) {
+      _hasCheckedHighlight = true;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['highlightPostId'] != null) {
+        final targetId = args['highlightPostId'].toString();
+        Future.delayed(const Duration(milliseconds: 400), () {
+          FoodService.instance.getFoodPostById(targetId).then((post) {
+            if (post != null && mounted) {
+              _showPostPreview(post);
+            }
+          });
+        });
+      }
+    }
   }
 
   void _showSettingsBottomSheet() {

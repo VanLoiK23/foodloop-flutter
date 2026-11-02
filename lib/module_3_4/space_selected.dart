@@ -180,7 +180,20 @@ class _SpaceSelectedState extends State<SpaceSelected> {
                     )
                 ),
                 const Divider(),
-                _bottomSheetAction(Icons.share_outlined, AppColors.brand, 'Chia sẻ 1 chạm', false, () {}),
+                _bottomSheetAction(Icons.share_outlined, AppColors.brand, 'Chia sẻ 1 chạm', false, () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                        context,
+                        '/food-safety-check',
+                        arguments: {
+                            'id': productId,
+                            'name': productName,
+                            'subtitle': '$qty - $spaceName',
+                            'expiry': badgeText,
+                            'image': imageUrl,
+                        },
+                    );
+                }),
                 const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 48, endIndent: 20),
                 _bottomSheetAction(Icons.check_circle_outline, AppColors.title, 'Đã dùng hết', false, () {
                     _deleteProduct(productId, spaceName, productName, 'Đã đánh dấu dùng hết $productName');

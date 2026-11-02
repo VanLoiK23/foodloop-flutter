@@ -154,7 +154,16 @@ class Screen55QuickViewBottomSheet extends StatelessWidget {
                 post.distanceText,
                 style: const TextStyle(fontSize: 13, color: AppColors.gray),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '• ${post.pickupAddress}',
+                  style: const TextStyle(fontSize: 13, color: AppColors.gray),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               const Icon(Icons.access_time_outlined, size: 16, color: AppColors.gray),
               const SizedBox(width: 4),
               Text(

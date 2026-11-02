@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../components/action_card.dart';
 import '../components/alert_banner.dart';
 import '../components/bottom_nav.dart';
 import '../components/post_card.dart';
@@ -152,7 +153,7 @@ class CommunityProfileScreen extends StatelessWidget {
                           title: 'Điểm tin cậy',
                           score: trustScore,
                           maxScore: trustScoreMax,
-                          onTap: () => _showTrustCriteria(context),
+                          onTap: () => Navigator.pushNamed(context, '/received-thanks'),
                         ),
 
                         const SizedBox(height: AppTokens.space16),
@@ -166,6 +167,14 @@ class CommunityProfileScreen extends StatelessWidget {
                           borderColor: AppTokens.infoBorder,
                           actionText: 'Xem tiêu chí',
                           onAction: () => _showTrustCriteria(context),
+                        ),
+
+                        const SizedBox(height: AppTokens.space16),
+
+                        ActionCard(
+                          title: 'Lời cảm ơn đã nhận',
+                          subtitle: 'Xem phản hồi tích cực từ hàng xóm & huy hiệu cộng đồng',
+                          onTap: () => Navigator.pushNamed(context, '/received-thanks'),
                         ),
 
                         const SizedBox(height: AppTokens.space24),
@@ -343,18 +352,35 @@ class CommunityProfileScreen extends StatelessWidget {
               style: AppTokens.bodyMedium,
             ),
             const SizedBox(height: AppTokens.space20),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text(
-                  'Đã hiểu',
-                  style: TextStyle(
-                    color: AppTokens.brand,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text(
+                    'Đóng',
+                    style: TextStyle(
+                      color: AppTokens.textSecondary,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushNamed(context, '/received-thanks');
+                  },
+                  child: const Text(
+                    'Xem lời cảm ơn ->',
+                    style: TextStyle(
+                      color: AppTokens.brand,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

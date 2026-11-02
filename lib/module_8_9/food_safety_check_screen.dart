@@ -7,6 +7,7 @@ import '../components/post_card.dart';
 import '../components/primary_button.dart';
 import '../components/screen_header.dart';
 import '../components/status_badge.dart';
+import '../module_5_map/services/food_service.dart';
 import '../services/foodloop_firestore_service.dart';
 import '../theme/app_tokens.dart';
 
@@ -41,34 +42,64 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
   Future<void> _handleContinue({
     required String productId,
     required List<String> checklist,
+    required String productName,
+    required String productSubtitle,
+    required String expiryText,
   }) async {
     setState(() => _isSubmitting = true);
 
     try {
       final confirmed = _checkedIndices.map((i) => checklist[i]).toList();
+      // 1. Ghi nhận xác minh an toàn thực phẩm lên Firestore
       await FoodLoopFirestoreService.submitFoodSafetyVerification(
         productId: productId,
         isPassed: true,
         confirmedItems: confirmed,
       );
 
+      // 2. Tạo bài đăng chia sẻ 1 chạm trên bản đồ Quanh bạn
+      // Note: vị trí của sản phẩm chia sẻ 1 chạm sẽ cách bạn ngẫu nhiên dưới và pickupAddress mặc định là 470 Trần Đại Nghĩa
+      final sharedPost = await FoodService.instance.createSharedFoodPost(
+        title: productName.isNotEmpty ? productName : 'Thực phẩm chia sẻ',
+        badge: expiryText.isNotEmpty ? expiryText : 'Còn 1 ngày',
+        condition: 'Đã kiểm tra an toàn (${confirmed.length} tiêu chí đạt)',
+        pickupAddress: '470 Trần Đại Nghĩa',
+      );
+
+      // 3. Cập nhật trạng thái món đồ trong kho tủ lạnh
+      if (productId.isNotEmpty && productId != 'food_safety_check_target') {
+        try {
+          await FirebaseFirestore.instance
+              .collection('products')
+              .doc(productId)
+              .update({'status': 'shared'});
+        } catch (_) {}
+      }
+
       if (!mounted) return;
       setState(() => _isSubmitting = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Xác nhận an toàn thực phẩm thành công!'),
+        SnackBar(
+          content: Text('Đã chia sẻ "${sharedPost.title}" lên Bản đồ Quanh bạn!'),
           backgroundColor: AppTokens.brand,
+          duration: const Duration(seconds: 2),
         ),
       );
 
-      Navigator.pop(context);
+      // 4. Chuyển ngay đến Bản đồ "Quanh bạn" và hiển thị bài đăng vừa tạo
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/map',
+        (route) => route.isFirst,
+        arguments: {'highlightPostId': sharedPost.id},
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi cập nhật xác thực: $e'),
+          content: Text('Lỗi chia sẻ: $e'),
           backgroundColor: AppTokens.danger,
         ),
       );
@@ -122,6 +153,14 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    final String? effectiveProductId = widget.productId ??
+        (routeArgs is String
+            ? routeArgs
+            : (routeArgs is Map ? routeArgs['id']?.toString() : null));
+    final Map<String, dynamic>? customProduct =
+        routeArgs is Map<String, dynamic> ? routeArgs : null;
+
     return Scaffold(
       backgroundColor: AppTokens.cream,
       bottomNavigationBar: FoodLoopBottomNavComponent(
@@ -139,7 +178,7 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
             // 2. Nội dung cuộn lắng nghe dữ liệu từ Firestore
             Expanded(
               child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: FoodLoopFirestoreService.streamFoodSafetyCheck(widget.productId),
+                stream: FoodLoopFirestoreService.streamFoodSafetyCheck(effectiveProductId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -149,11 +188,22 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
 
                   final data = snapshot.data?.data() ?? {};
 
-                  // Trích xuất dữ liệu từ Firestore
-                  final String productName = data['productName'] ?? '';
-                  final String productSubtitle = data['productSubtitle'] ?? '';
-                  final String productImage = data['productImage'] ?? '';
-                  final String expiryText = data['expiryText'] ?? 'Còn 2 ngày';
+                  // Trích xuất dữ liệu từ Firestore hoặc arguments truyền vào
+                  final String productName = customProduct?['name'] ??
+                      customProduct?['title'] ??
+                      data['productName'] ??
+                      '';
+                  final String productSubtitle = customProduct?['subtitle'] ??
+                      customProduct?['space'] ??
+                      data['productSubtitle'] ??
+                      '';
+                  final String productImage = customProduct?['image'] ??
+                      customProduct?['imageUrl'] ??
+                      data['productImage'] ??
+                      '';
+                  final String expiryText = customProduct?['expiry'] ??
+                      data['expiryText'] ??
+                      'Còn hạn sử dụng';
 
                   final String ruleTitle = data['ruleTitle'] ?? 'Quy tắc an toàn thực phẩm';
                   final String ruleMessage = data['ruleMessage'] ??
@@ -282,7 +332,7 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
                         const SizedBox(height: AppTokens.space16),
 
                         PrimaryButton(
-                          text: 'Tiếp tục',
+                          text: 'Hoàn tất chia sẻ lên Bản đồ',
                           isEnabled: allChecked,
                           isLoading: _isSubmitting,
                           backgroundColor:
@@ -291,8 +341,11 @@ class _FoodSafetyCheckScreenState extends State<FoodSafetyCheckScreen> {
                               allChecked ? Colors.white : const Color(0xFF94A3B8),
                           onPressed: allChecked
                               ? () => _handleContinue(
-                                    productId: widget.productId ?? 'food_safety_check_target',
+                                    productId: effectiveProductId ?? 'food_safety_check_target',
                                     checklist: checklist,
+                                    productName: productName,
+                                    productSubtitle: productSubtitle,
+                                    expiryText: expiryText,
                                   )
                               : null,
                         ),

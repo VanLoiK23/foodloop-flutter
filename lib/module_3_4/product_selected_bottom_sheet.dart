@@ -112,7 +112,19 @@ class ProductSelectedBottomSheet extends StatelessWidget {
             FontAwesomeIcons.shareNodes,
             'Chia sẻ 1 chạm',
             AppColors.brand,
-            () => Navigator.pop(context),
+            () {
+              Navigator.pop(context);
+              Navigator.pushNamed(
+                context,
+                '/food-safety-check',
+                arguments: {
+                  'id': productId ?? '',
+                  'name': name,
+                  'subtitle': subtitle,
+                  'expiry': badge,
+                },
+              );
+            },
           ),
           _action(
             FontAwesomeIcons.check,
