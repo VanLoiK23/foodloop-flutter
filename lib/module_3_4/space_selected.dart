@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../app_theme.dart';
-import 'product_selected_bottom_sheet.dart';
+// import 'product_selected_bottom_sheet.dart';
 import 'space_selected_action_bottom_sheet.dart';
-import 'virtual_refrigerator_bottom_sheet.dart';
+// import 'virtual_refrigerator_bottom_sheet.dart';
 
 class SpaceSelected extends StatefulWidget {
   const SpaceSelected({super.key});
@@ -19,7 +19,95 @@ class _SpaceSelectedState extends State<SpaceSelected> {
   String sortOption = 'Gần hết hạn nhất';
   TextEditingController searchController = TextEditingController();
 
+  static const List<Map<String, dynamic>> _defaultSpaceChips = [
+    {'id': 'space_fridge', 'name': 'Ngăn mát'},
+    {'id': 'space_freezer', 'name': 'Ngăn đông'},
+    {'id': 'space_dry', 'name': 'Tủ bếp'},
+    {'id': 'space_spices', 'name': 'Gia vị'},
+  ];
+
+  static const List<Map<String, dynamic>> _defaultSpaceProducts = [
+    {
+      'id': 'prod_sample_1',
+      'name': 'Sữa tươi TH True Milk 1L',
+      'space': 'Ngăn mát',
+      'quantity': '4',
+      'unit': 'hộp',
+      'daysLeft': 2,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_2',
+      'name': 'Rau muống',
+      'space': 'Ngăn mát',
+      'quantity': '1',
+      'unit': 'bó',
+      'daysLeft': 1,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_3',
+      'name': 'Sữa chua Vinamilk',
+      'space': 'Ngăn mát',
+      'quantity': '1',
+      'unit': 'lốc',
+      'daysLeft': 5,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_4',
+      'name': 'Ức gà tươi CP',
+      'space': 'Ngăn đông',
+      'quantity': '2',
+      'unit': 'khay',
+      'daysLeft': 3,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_5',
+      'name': 'Cá hồi fillet',
+      'space': 'Ngăn đông',
+      'quantity': '500',
+      'unit': 'g',
+      'daysLeft': 7,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_6',
+      'name': 'Gạo ST25',
+      'space': 'Tủ bếp',
+      'quantity': '5',
+      'unit': 'kg',
+      'daysLeft': 60,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      'id': 'prod_sample_7',
+      'name': 'Nước mắm Phú Quốc',
+      'space': 'Gia vị',
+      'quantity': '1',
+      'unit': 'chai',
+      'daysLeft': 90,
+      'createdAt': null,
+      'noExpiry': false,
+      'imageUrl': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=80',
+    },
+  ];
+
   // Helper method to format time if needed, though not strictly required here based on design
+  // ignore: unused_element
   String _formatTime(Timestamp? timestamp) {
       if (timestamp == null) return 'Vừa xong';
       return '...'; // Placeholder if needed later
@@ -92,7 +180,20 @@ class _SpaceSelectedState extends State<SpaceSelected> {
                     )
                 ),
                 const Divider(),
-                _bottomSheetAction(Icons.share_outlined, AppColors.brand, 'Chia sẻ 1 chạm', false, () {}),
+                _bottomSheetAction(Icons.share_outlined, AppColors.brand, 'Chia sẻ 1 chạm', false, () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                        context,
+                        '/food-safety-check',
+                        arguments: {
+                            'id': productId,
+                            'name': productName,
+                            'subtitle': '$qty - $spaceName',
+                            'expiry': badgeText,
+                            'image': imageUrl,
+                        },
+                    );
+                }),
                 const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 48, endIndent: 20),
                 _bottomSheetAction(Icons.check_circle_outline, AppColors.title, 'Đã dùng hết', false, () {
                     _deleteProduct(productId, spaceName, productName, 'Đã đánh dấu dùng hết $productName');
@@ -215,45 +316,57 @@ class _SpaceSelectedState extends State<SpaceSelected> {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: stream,
             builder: (context, snapshot) {
-              var products = snapshot.data?.docs ?? [];
+              final rawDocs = snapshot.data?.docs ?? [];
+              final List<Map<String, dynamic>> rawList = rawDocs.isNotEmpty
+                  ? rawDocs.map((d) => {'id': d.id, ...d.data()}).toList()
+                  : _defaultSpaceProducts
+                      .where((p) => p['space'] == spaceName)
+                      .toList();
+
+              // Fallback nếu không gian hiện tại chưa có món mặc định riêng
+              final List<Map<String, dynamic>> baseList = rawList.isNotEmpty
+                  ? rawList
+                  : (rawDocs.isEmpty ? _defaultSpaceProducts.take(3).toList() : <Map<String, dynamic>>[]);
+
+              var products = List<Map<String, dynamic>>.from(baseList);
               
               // Search filtering
               if (searchController.text.isNotEmpty) {
-                  products = products.where((doc) => (doc.data()['name']?.toString() ?? '').toLowerCase().contains(searchController.text.toLowerCase())).toList();
+                  products = products.where((item) => (item['name']?.toString() ?? '').toLowerCase().contains(searchController.text.toLowerCase())).toList();
               }
 
               // Status filtering based on 'daysLeft'
               if (filter == 'Sắp hết hạn') {
-                  products = products.where((doc) {
-                      final days = doc.data()['daysLeft'];
+                  products = products.where((item) {
+                      final days = item['daysLeft'];
                       return days is num && days >= 0 && days <= 3;
                   }).toList();
               } else if (filter == 'Đã quá hạn') {
-                   products = products.where((doc) {
-                      final days = doc.data()['daysLeft'];
+                   products = products.where((item) {
+                      final days = item['daysLeft'];
                       return days is num && days < 0;
                   }).toList();
               } else if (filter == 'Chưa có hạn') {
-                  products = products.where((doc) => doc.data()['noExpiry'] == true).toList();
+                  products = products.where((item) => item['noExpiry'] == true).toList();
               }
 
               // Sorting
               if (sortOption == 'Gần hết hạn nhất') {
                   products.sort((a, b) {
-                      final aDays = a.data()['daysLeft'] as num? ?? double.infinity;
-                      final bDays = b.data()['daysLeft'] as num? ?? double.infinity;
+                      final aDays = a['daysLeft'] as num? ?? double.infinity;
+                      final bDays = b['daysLeft'] as num? ?? double.infinity;
                       return aDays.compareTo(bDays);
                   });
               } else if (sortOption == 'Mới thêm') {
                    products.sort((a, b) {
-                      final aTime = a.data()['createdAt'] as Timestamp? ?? Timestamp(0,0);
-                      final bTime = b.data()['createdAt'] as Timestamp? ?? Timestamp(0,0);
+                      final aTime = a['createdAt'] as Timestamp? ?? Timestamp(0,0);
+                      final bTime = b['createdAt'] as Timestamp? ?? Timestamp(0,0);
                       return bTime.compareTo(aTime); // Descending
                   });
               }
 
-              final expiringCount = products.where((doc) {
-                  final days = doc.data()['daysLeft'];
+              final expiringCount = products.where((item) {
+                  final days = item['daysLeft'];
                   return days is num && days >= 0 && days <= 3;
               }).length;
 
@@ -310,10 +423,15 @@ class _SpaceSelectedState extends State<SpaceSelected> {
                         stream: FirebaseFirestore.instance.collection('spaces').snapshots(),
                         builder: (context, spaceSnapshot) {
                              final spaceDocs = spaceSnapshot.data?.docs ?? [];
+                             final List<Map<String, dynamic>> spaceList = spaceDocs.isNotEmpty
+                                 ? spaceDocs.map((d) => {'id': d.id, ...d.data()}).toList()
+                                 : _defaultSpaceChips;
+
                              return ListView(
                                 scrollDirection: Axis.horizontal,
-                                children: spaceDocs.map((doc) {
-                                    final name = doc.data()['name']?.toString() ?? '';
+                                children: spaceList.map((item) {
+                                    final name = item['name']?.toString() ?? '';
+                                    final id = item['id']?.toString() ?? '';
                                     return Padding(
                                       padding: const EdgeInsets.only(right: 8),
                                       child: ChoiceChip(
@@ -324,7 +442,7 @@ class _SpaceSelectedState extends State<SpaceSelected> {
                                         onSelected: (_) => Navigator.pushReplacementNamed(
                                           context,
                                           '/space-selected',
-                                          arguments: {'spaceId': doc.id, 'spaceName': name},
+                                          arguments: {'spaceId': id, 'spaceName': name},
                                         ),
                                       ),
                                     );
@@ -438,16 +556,15 @@ class _SpaceSelectedState extends State<SpaceSelected> {
                         child: Center(child: Text('Không có thực phẩm nào phù hợp', style: TextStyle(color: AppColors.gray))),
                      )
                   else
-                    ...products.map((doc) {
-                      final data = doc.data();
-                      final daysLeft = data['daysLeft'] as int? ?? 0;
+                    ...products.map((item) {
+                      final daysLeft = (item['daysLeft'] as num?)?.toInt() ?? 0;
                       return _item(
                         context,
-                        doc.id,
-                        data['name']?.toString() ?? 'Sản phẩm',
-                        '${data['quantity'] ?? ''} ${data['unit'] ?? ''}'.trim(),
+                        item['id']?.toString(),
+                        item['name']?.toString() ?? 'Sản phẩm',
+                        '${item['quantity'] ?? ''} ${item['unit'] ?? ''}'.trim(),
                         daysLeft,
-                        data['imageUrl']?.toString() ?? '',
+                        item['imageUrl']?.toString() ?? '',
                         spaceName
                       );
                     }),

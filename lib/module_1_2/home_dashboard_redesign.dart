@@ -1,8 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
+import '../services/foodloop_firestore_service.dart';
+import '../services/user_session.dart';
 
-class HomeDashboardRedesign extends StatelessWidget {
+class HomeDashboardRedesign extends StatefulWidget {
   const HomeDashboardRedesign({super.key});
+
+  @override
+  State<HomeDashboardRedesign> createState() => _HomeDashboardRedesignState();
+}
+
+class _HomeDashboardRedesignState extends State<HomeDashboardRedesign> {
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final sessionUid = await UserSession.getUserId();
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    if (mounted) {
+      setState(() {
+        _userId = (sessionUid != null && sessionUid.isNotEmpty)
+            ? sessionUid
+            : authUid;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,52 +141,96 @@ class HomeDashboardRedesign extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // 2. Lời chào
-                const Text(
-                  'Chào buổi sáng, Hà!',
-                  style: TextStyle(
-                    color: Color(0xFF2B3935),
-                    fontSize: 22,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Đây là tình trạng thực phẩm của bạn hôm nay',
-                  style: TextStyle(
-                    color: Color(0xFF6B7180),
-                    fontSize: 14,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                  ),
+                // 2. Lời chào (Ưu tiên Firebase, fallback mặc định Figma)
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FoodLoopFirestoreService.streamUserProfile(_userId),
+                  builder: (context, snapshot) {
+                    final data = snapshot.data?.data();
+                    final String fullName = data?['fullName'] ??
+                        data?['name'] ??
+                        data?['displayName'] ??
+                        'Hà';
+                    final String displayName =
+                        fullName.trim().split(' ').last;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Chào buổi sáng, $displayName!',
+                          style: const TextStyle(
+                            color: Color(0xFF2B3935),
+                            fontSize: 22,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Đây là tình trạng thực phẩm của bạn hôm nay',
+                          style: TextStyle(
+                            color: Color(0xFF6B7180),
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 20),
 
-                // 3. Thẻ thống kê
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatisticCard(
-                        number: '24',
-                        title: 'Thực phẩm',
-                        icon: Icons.kitchen,
-                        numberColor: const Color(0xFF2D7C31),
-                        buttonText: 'Xem tủ',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildStatisticCard(
-                        number: '5',
-                        title: 'Sắp hết hạn',
-                        icon: Icons.warning_amber_rounded,
-                        numberColor: const Color(0xFFD32F2F),
-                        buttonText: 'Xem',
-                      ),
-                    ),
-                  ],
+                // 3. Thẻ thống kê (Ưu tiên Firebase, fallback mặc định Figma)
+                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FoodLoopFirestoreService.streamFridgeItems(),
+                  builder: (context, snapshot) {
+                    final docs = snapshot.data?.docs ?? [];
+                    final bool hasData = docs.isNotEmpty;
+
+                    final int totalCount = hasData ? docs.length : 24;
+                    final int expiringCount = hasData
+                        ? docs.where((d) {
+                            final m = d.data();
+                            final days = m['daysLeft'] ?? m['remainingDays'];
+                            return m['isExpiring'] == true ||
+                                (days != null && days <= 3);
+                          }).length
+                        : 5;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatisticCard(
+                            number: '$totalCount',
+                            title: 'Thực phẩm',
+                            icon: Icons.kitchen,
+                            numberColor: const Color(0xFF2D7C31),
+                            buttonText: 'Xem tủ',
+                            onTapButton: () {
+                              Navigator.pushNamed(
+                                  context, '/virtual-fridge');
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatisticCard(
+                            number: '$expiringCount',
+                            title: 'Sắp hết hạn',
+                            icon: Icons.warning_amber_rounded,
+                            numberColor: const Color(0xFFD32F2F),
+                            buttonText: 'Xem',
+                            onTapButton: () {
+                              Navigator.pushNamed(
+                                  context, '/virtual-fridge');
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 28),
@@ -195,22 +268,65 @@ class HomeDashboardRedesign extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Item 1
-                _buildFoodItem(
-                  name: 'Sữa tươi TH True Milk',
-                  description: '4 hộp - Ngăn mát',
-                  expiry: 'Còn 1 ngày',
-                  imageUrl: 'https://placehold.co/56x56',
-                ),
+                // Danh sách thực phẩm cần xử lý (Ưu tiên Firebase, fallback mặc định Figma)
+                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FoodLoopFirestoreService.streamFridgeItems(),
+                  builder: (context, snapshot) {
+                    final docs = snapshot.data?.docs ?? [];
+                    final expiringDocs = docs.where((d) {
+                      final m = d.data();
+                      final days = m['daysLeft'] ?? m['remainingDays'];
+                      return m['isExpiring'] == true ||
+                          (days != null && days <= 3);
+                    }).toList();
 
-                const SizedBox(height: 12),
+                    if (expiringDocs.isNotEmpty) {
+                      return Column(
+                        children: expiringDocs.take(2).map((d) {
+                          final data = d.data();
+                          final name = data['name']?.toString() ??
+                              data['title']?.toString() ??
+                              'Thực phẩm';
+                          final desc = data['space']?.toString() ??
+                              data['location']?.toString() ??
+                              data['category']?.toString() ??
+                              'Ngăn mát';
+                          final days = data['daysLeft'] ?? data['remainingDays'] ?? 1;
+                          final img = data['imageUrl']?.toString() ??
+                              'https://placehold.co/56x56';
 
-                // Item 2
-                _buildFoodItem(
-                  name: 'Sữa chua VinaMilk',
-                  description: '1 lốc - Ngăn mát',
-                  expiry: 'Còn 2 ngày',
-                  imageUrl: 'https://placehold.co/56x56',
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildFoodItem(
+                              name: name,
+                              description: desc,
+                              expiry: 'Còn $days ngày',
+                              imageUrl: img,
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+
+                    // Fallback các item mặc định Figma
+                    return Column(
+                      children: [
+                        _buildFoodItem(
+                          name: 'Sữa tươi TH True Milk',
+                          description: '4 hộp - Ngăn mát',
+                          expiry: 'Còn 1 ngày',
+                          imageUrl: 'https://placehold.co/56x56',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFoodItem(
+                          name: 'Sữa chua VinaMilk',
+                          description: '1 lốc - Ngăn mát',
+                          expiry: 'Còn 2 ngày',
+                          imageUrl: 'https://placehold.co/56x56',
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 12),
@@ -220,7 +336,9 @@ class HomeDashboardRedesign extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/virtual-fridge');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2D7C31),
                       elevation: 0,
@@ -253,7 +371,7 @@ class HomeDashboardRedesign extends StatelessWidget {
 
                 const SizedBox(height: 28),
 
-                // 5. Tiêu thụ tuần này
+                // 5. Tiêu thụ tuần này (Ưu tiên Firebase, fallback mặc định Figma)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -285,14 +403,19 @@ class HomeDashboardRedesign extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Flexible(
-                      child: Text(
-                        'Xem báo cáo chi tiết',
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(
-                          color: Color(0xFF2D7C31),
-                          fontSize: 12,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w600,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/impact-trends');
+                        },
+                        child: const Text(
+                          'Xem báo cáo chi tiết',
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            color: Color(0xFF2D7C31),
+                            fontSize: 12,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -302,119 +425,135 @@ class HomeDashboardRedesign extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Biểu đồ tiêu thụ
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: _cardDecoration(),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FoodLoopFirestoreService.streamImpactTrends(),
+                  builder: (context, snapshot) {
+                    final data = snapshot.data?.data();
+                    final String consumedText = data?['consumedSummary'] ??
+                        (data?['consumedItems'] != null
+                            ? '${data!['consumedItems']} món'
+                            : '12 món');
+                    final String wastedText = data?['wastedSummary'] ??
+                        (data?['wastedWeight'] != null
+                            ? '${data!['wastedWeight']} kg'
+                            : '2.4 kg');
+
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: _cardDecoration(),
+                      child: Column(
                         children: [
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ĐÃ TIÊU THỤ',
-                                  style: TextStyle(
-                                    color: Color(0xFF6B7180),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'ĐÃ TIÊU THỤ',
+                                      style: TextStyle(
+                                        color: Color(0xFF6B7180),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      consumedText,
+                                      style: const TextStyle(
+                                        color: Color(0xFF2B3935),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '12 món',
-                                  style: TextStyle(
-                                    color: Color(0xFF2B3935),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 30,
+                                color: const Color(0xFFE2E8F0),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'LÃNG PHÍ',
+                                      style: TextStyle(
+                                        color: Color(0xFF6B7180),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      wastedText,
+                                      style: const TextStyle(
+                                        color: Color(0xFFD32F2F),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          Container(
-                            width: 1,
-                            height: 30,
-                            color: const Color(0xFFE2E8F0),
-                          ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                  'LÃNG PHÍ',
-                                  style: TextStyle(
-                                    color: Color(0xFF6B7180),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                _buildBarItem(
+                                  'T2',
+                                  0.4,
+                                  const Color(0xFFE2E8F0),
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '2.4 kg',
-                                  style: TextStyle(
-                                    color: Color(0xFFD32F2F),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                _buildBarItem(
+                                  'T3',
+                                  0.6,
+                                  const Color(0xFFE2E8F0),
+                                ),
+                                _buildBarItem(
+                                  'T4',
+                                  0.3,
+                                  const Color(0xFFE2E8F0),
+                                ),
+                                _buildBarItem(
+                                  'T5',
+                                  0.8,
+                                  const Color(0xFF2D7C31),
+                                ),
+                                _buildBarItem(
+                                  'T6',
+                                  0.5,
+                                  const Color(0xFFE2E8F0),
+                                ),
+                                _buildBarItem(
+                                  'T7',
+                                  1.0,
+                                  const Color(0xFFF4B942),
+                                ),
+                                _buildBarItem(
+                                  'CN',
+                                  0.6,
+                                  const Color(0xFFE2E8F0),
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 20),
-
-                      SizedBox(
-                        height: 120,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            _buildBarItem(
-                              'T2',
-                              0.4,
-                              const Color(0xFFE2E8F0),
-                            ),
-                            _buildBarItem(
-                              'T3',
-                              0.6,
-                              const Color(0xFFE2E8F0),
-                            ),
-                            _buildBarItem(
-                              'T4',
-                              0.3,
-                              const Color(0xFFE2E8F0),
-                            ),
-                            _buildBarItem(
-                              'T5',
-                              0.8,
-                              const Color(0xFF2D7C31),
-                            ),
-                            _buildBarItem(
-                              'T6',
-                              0.5,
-                              const Color(0xFFE2E8F0),
-                            ),
-                            _buildBarItem(
-                              'T7',
-                              1.0,
-                              const Color(0xFFF4B942),
-                            ),
-                            _buildBarItem(
-                              'CN',
-                              0.6,
-                              const Color(0xFFE2E8F0),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 28),
@@ -450,31 +589,47 @@ class HomeDashboardRedesign extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Các nút thao tác nhanh - dùng Expanded để tránh overflow
+                // Các nút thao tác nhanh
                 Row(
-                  children: const [
+                  children: [
                     Expanded(
                       child: _QuickActionButton(
                         icon: Icons.qr_code_scanner,
                         label: 'Quét hóa đơn',
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, '/import-product');
+                        },
                       ),
                     ),
                     Expanded(
                       child: _QuickActionButton(
                         icon: Icons.add,
                         label: 'Thêm thủ công',
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, '/add-product');
+                        },
                       ),
                     ),
                     Expanded(
                       child: _QuickActionButton(
                         icon: Icons.search,
                         label: 'Cùng thêm',
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, '/invite-family');
+                        },
                       ),
                     ),
                     Expanded(
                       child: _QuickActionButton(
                         icon: Icons.share,
                         label: 'Chia sẻ',
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, '/shopping');
+                        },
                       ),
                     ),
                   ],
@@ -483,68 +638,83 @@ class HomeDashboardRedesign extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 // 7. Tác động xanh
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(
-                        width: 1,
-                        color: Color(0xFFC8E6C9),
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Icon(
-                            Icons.eco,
-                            color: Color(0xFF2D7C31),
-                            size: 24,
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FoodLoopFirestoreService.streamHonorCardData(),
+                  builder: (context, snapshot) {
+                    final data = snapshot.data?.data();
+                    final String impactValue =
+                        data?['foodSaved']?.toString() ?? '2.4 kg';
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/honor-card');
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                              width: 1,
+                              color: Color(0xFFC8E6C9),
+                            ),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          Icon(
-                            Icons.arrow_forward,
-                            size: 18,
-                            color: Color(0xFF2B3935),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        '2.4 kg',
-                        style: TextStyle(
-                          color: Color(0xFF2B3935),
-                          fontSize: 24,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w700,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: const [
+                                Icon(
+                                  Icons.eco,
+                                  color: Color(0xFF2D7C31),
+                                  size: 24,
+                                ),
+                                Icon(
+                                  Icons.arrow_forward,
+                                  size: 18,
+                                  color: Color(0xFF2B3935),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              impactValue,
+                              style: const TextStyle(
+                                color: Color(0xFF2B3935),
+                                fontSize: 24,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Lượng thực phẩm bạn đã giảm lãng phí trong tháng này.',
+                              style: TextStyle(
+                                color: Color(0xFF6B7180),
+                                fontSize: 13,
+                                fontFamily: 'Roboto',
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Cùng bảo vệ hành tinh',
+                              style: TextStyle(
+                                color: Color(0xFF2D7C31),
+                                fontSize: 13,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Lượng thực phẩm bạn đã giảm lãng phí trong tháng này.',
-                        style: TextStyle(
-                          color: Color(0xFF6B7180),
-                          fontSize: 13,
-                          fontFamily: 'Roboto',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Cùng bảo vệ hành tinh',
-                        style: TextStyle(
-                          color: Color(0xFF2D7C31),
-                          fontSize: 13,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 40),
@@ -568,6 +738,7 @@ class HomeDashboardRedesign extends StatelessWidget {
     required IconData icon,
     required Color numberColor,
     required String buttonText,
+    VoidCallback? onTapButton,
   }) {
     return Container(
       height: 140,
@@ -608,7 +779,7 @@ class HomeDashboardRedesign extends StatelessWidget {
             width: double.infinity,
             height: 32,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onTapButton ?? () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2D7C31),
                 elevation: 0,
@@ -785,59 +956,65 @@ class HomeDashboardRedesign extends StatelessWidget {
 class _QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
   const _QuickActionButton({
     required this.icon,
     required this.label,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(
-                width: 1,
-                color: Color(0xFFE2E8F0),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(
+                  width: 1,
+                  color: Color(0xFFE2E8F0),
+                ),
+                borderRadius: BorderRadius.circular(16),
               ),
-              borderRadius: BorderRadius.circular(16),
+              shadows: const [
+                BoxShadow(
+                  color: Color(0x0C000000),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
+                ),
+              ],
             ),
-            shadows: const [
-              BoxShadow(
-                color: Color(0x0C000000),
-                blurRadius: 2,
-                offset: Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF2D7C31),
-            size: 24,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF2B3935),
-              fontSize: 11,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
+            child: Icon(
+              icon,
+              color: const Color(0xFF2D7C31),
+              size: 24,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF2B3935),
+                fontSize: 11,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

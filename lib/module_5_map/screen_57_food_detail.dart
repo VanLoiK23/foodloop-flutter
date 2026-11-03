@@ -39,8 +39,36 @@ class Screen57FoodDetail extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.more_vert, color: AppColors.title),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Tùy chọn bài đăng')),
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (ctx) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.flag_outlined, color: AppColors.danger),
+                        title: const Text('Báo cáo bài đăng', style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w500)),
+                        trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.gray),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          Navigator.pushNamed(
+                            context,
+                            '/report-appeal',
+                            arguments: {
+                              'id': post.id,
+                              'name': post.title,
+                              'subtitle': '${post.remainingQuantity} ${post.unit} · ${post.distanceMeters}m · ${post.giverName}',
+                              'image': '',
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -302,11 +330,11 @@ class Screen57FoodDetail extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.lock_outline, size: 14, color: AppColors.gray),
                             SizedBox(width: 4),
@@ -320,10 +348,12 @@ class Screen57FoodDetail extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Địa chỉ chính xác hiện sau khi được duyệt',
-                          style: TextStyle(fontSize: 12, color: AppColors.gray),
+                          post.pickupAddress.isNotEmpty
+                              ? post.pickupAddress
+                              : post.addressHint,
+                          style: const TextStyle(fontSize: 12, color: AppColors.gray),
                         ),
                       ],
                     ),

@@ -145,8 +145,6 @@ class _RescuePaymentScreenState extends State<RescuePaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const int amount = 45000;
-
     return Scaffold(
       backgroundColor: AppTokens.cream,
       bottomNavigationBar: FoodLoopBottomNavComponent(

@@ -76,6 +76,8 @@ class _AppealAndSupportScreenState extends State<AppealAndSupportScreen> {
           backgroundColor: AppTokens.brand,
         ),
       );
+
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);

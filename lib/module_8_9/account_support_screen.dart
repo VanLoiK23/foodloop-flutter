@@ -70,6 +70,8 @@ class _AccountSupportScreenState extends State<AccountSupportScreen> {
           backgroundColor: AppTokens.brand,
         ),
       );
+
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);

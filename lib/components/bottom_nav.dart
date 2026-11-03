@@ -31,9 +31,9 @@ class FoodLoopBottomNavComponent extends StatelessWidget {
   });
 
   static const List<BottomNavItem> defaultItems = [
-    BottomNavItem(icon: Icons.home_outlined, route: '/virtual-fridge'),
+    BottomNavItem(icon: Icons.home_outlined, route: '/home'),
     BottomNavItem(icon: Icons.kitchen_outlined, route: '/virtual-fridge'),
-    BottomNavItem(icon: Icons.map_outlined, route: '/virtual-fridge'),
+    BottomNavItem(icon: Icons.map_outlined, route: '/map'),
     BottomNavItem(icon: Icons.shopping_bag_outlined, route: '/rescue-market'),
     BottomNavItem(icon: Icons.person_outline, route: '/settings'),
   ];

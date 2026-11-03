@@ -93,6 +93,18 @@ class SettingsScreen extends StatelessWidget {
                           subtitle: badgeSubtitle,
                           onTap: () => Navigator.pushNamed(context, '/achievements'),
                         ),
+                        const SizedBox(height: AppTokens.space10),
+                        ActionCard(
+                          title: 'Báo cáo tác động',
+                          subtitle: 'Xu hướng tiết kiệm & giảm thiểu lãng phí thực phẩm',
+                          onTap: () => Navigator.pushNamed(context, '/impact-trends'),
+                        ),
+                        const SizedBox(height: AppTokens.space10),
+                        ActionCard(
+                          title: 'Lời cảm ơn đã nhận',
+                          subtitle: 'Danh tiếng và phản hồi tích cực từ cộng đồng',
+                          onTap: () => Navigator.pushNamed(context, '/received-thanks'),
+                        ),
 
                         const SizedBox(height: AppTokens.space20),
 
@@ -186,8 +198,40 @@ class SettingsScreen extends StatelessWidget {
 
                         const SizedBox(height: AppTokens.space20),
 
+                        _buildSectionTitle('Cộng đồng & An toàn thực phẩm'),
+                        const SizedBox(height: AppTokens.space8),
+                        ActionCard(
+                          title: 'Kiểm tra an toàn thực phẩm',
+                          subtitle: 'Tiêu chuẩn & quy tắc kiểm tra khi chia sẻ thực phẩm',
+                          onTap: () => Navigator.pushNamed(context, '/food-safety-check'),
+                        ),
+
+                        const SizedBox(height: AppTokens.space20),
+
+                        _buildSectionTitle('Hỗ trợ & Báo cáo'),
+                        const SizedBox(height: AppTokens.space8),
+                        ActionCard(
+                          title: 'Báo cáo của tôi',
+                          subtitle: 'Theo dõi tiến độ xử lý báo cáo vi phạm & khiếu nại',
+                          onTap: () => Navigator.pushNamed(context, '/my-reports'),
+                        ),
+                        const SizedBox(height: AppTokens.space10),
+                        ActionCard(
+                          title: 'Kháng nghị & Khiếu nại',
+                          subtitle: 'Gửi yêu cầu xem xét lại vi phạm hoặc bài đăng',
+                          onTap: () => Navigator.pushNamed(context, '/appeal-and-support'),
+                        ),
+
+                        const SizedBox(height: AppTokens.space20),
+
                         _buildSectionTitle('Quản lý tài khoản'),
                         const SizedBox(height: AppTokens.space8),
+                        ActionCard(
+                          title: 'Hỗ trợ tài khoản',
+                          subtitle: 'Trợ giúp khi gặp sự cố đăng nhập hoặc khóa tài khoản',
+                          onTap: () => Navigator.pushNamed(context, '/account-support'),
+                        ),
+                        const SizedBox(height: AppTokens.space10),
                         ActionCard(
                           title: 'Đổi mật khẩu',
                           subtitle: 'Cập nhật mật khẩu đăng nhập',

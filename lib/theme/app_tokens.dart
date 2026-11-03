@@ -12,6 +12,7 @@ class AppTokens {
   static const Color surface = Color(0xFFFFFFFF);        // White Card Surface: #FFFFFF
   
   static const Color title = Color(0xFF1F2937);          // Text Primary Dark: #1F2937
+  static const Color textPrimary = Color(0xFF1F2937);    // Text Primary: #1F2937
   static const Color body = Color(0xFF374151);           // Text Body: #374151
   static const Color textSecondary = Color(0xFF6B7280);  // Text Subtitle / Gray: #6B7280
   static const Color border = Color(0xFFE5E7EB);         // Border Gray: #E5E7EB

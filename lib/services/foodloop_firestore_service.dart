@@ -122,7 +122,9 @@ class FoodLoopFirestoreService {
 
   /// Lắng nghe dữ liệu hồ sơ cộng đồng và điểm tin cậy từ collection 'users'
   static Stream<DocumentSnapshot<Map<String, dynamic>>> streamCommunityProfile([String? userId]) {
-    final uid = userId ?? currentUserId ?? 'default_user';
+    final uid = (userId != null && userId.isNotEmpty)
+        ? userId
+        : 'default_user';
     return _firestore.collection('users').doc(uid).snapshots();
   }
 
@@ -250,5 +252,34 @@ class FoodLoopFirestoreService {
         .collection('rescue_orders')
         .orderBy('createdAt', descending: true)
         .snapshots();
+  }
+
+  // =================================================================
+  // --- 13. DASHBOARD & HOME (TRANG CHỦ - MODULE 1_2) ---
+  // =================================================================
+
+  /// Lắng nghe thông tin tài khoản người dùng từ collection 'users'
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> streamUserProfile([String? userId]) {
+    final uid = userId ?? currentUserId ?? 'default_user';
+    return _firestore.collection('users').doc(uid).snapshots();
+  }
+
+  /// Lắng nghe danh sách thực phẩm trong kho của người dùng (ưu tiên collection 'products')
+  static Stream<QuerySnapshot<Map<String, dynamic>>> streamFridgeItems([String? userId]) {
+    return _firestore.collection('products').snapshots();
+  }
+
+  /// Lắng nghe danh sách thông báo của người dùng
+  static Stream<QuerySnapshot<Map<String, dynamic>>> streamUserNotifications([String? userId]) {
+    final uid = userId ?? currentUserId;
+    if (uid != null && uid.isNotEmpty) {
+      return _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('notify')
+          .orderBy('createdAt', descending: true)
+          .snapshots();
+    }
+    return _firestore.collection('notifications').snapshots();
   }
 }

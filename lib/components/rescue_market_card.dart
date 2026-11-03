@@ -11,6 +11,7 @@ class RescueMarketCard extends StatelessWidget {
   final String? savings;
   final String? remainingTime;
   final String? pickupTime;
+  final String? imageUrl;
   final Widget? leading;
   final VoidCallback? onTap;
 
@@ -24,9 +25,28 @@ class RescueMarketCard extends StatelessWidget {
     this.savings,
     this.remainingTime,
     this.pickupTime,
+    this.imageUrl,
     this.leading,
     this.onTap,
   });
+
+  Widget _buildDefaultImage() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.shopping_basket_rounded,
+          color: AppTokens.brand,
+          size: 26,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,20 +76,18 @@ class RescueMarketCard extends StatelessWidget {
           children: [
             // 1. Icon / Ảnh đại diện bên trái
             leading ??
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE8F5E9),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.crop_free_rounded,
-                      color: AppTokens.brand,
-                      size: 24,
-                    ),
-                  ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: (imageUrl != null && imageUrl!.trim().isNotEmpty)
+                      ? Image.network(
+                          imageUrl!,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildDefaultImage(),
+                        )
+                      : _buildDefaultImage(),
                 ),
 
             const SizedBox(width: AppTokens.space14),
@@ -147,7 +165,7 @@ class RescueMarketCard extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(
-                          Icons.crop_square_rounded,
+                          Icons.access_time_rounded,
                           size: 14,
                           color: AppTokens.textSecondary,
                         ),
